@@ -16,6 +16,10 @@ interface Video {
   shares: number;
   isAI: boolean;
   trend?: string;
+  allowCollab: boolean;
+  allowRemix: boolean;
+  originalAuthor?: string;
+  collabWith?: string[];
 }
 
 interface Stream {
@@ -83,7 +87,9 @@ const mockVideos: Video[] = [
     comments: 842,
     shares: 1203,
     isAI: true,
-    trend: 'Космические визуализации'
+    trend: 'Космические визуализации',
+    allowCollab: true,
+    allowRemix: false
   },
   {
     id: 2,
@@ -95,7 +101,9 @@ const mockVideos: Video[] = [
     comments: 1234,
     shares: 2341,
     isAI: false,
-    trend: 'Танцевальные челленджи'
+    trend: 'Танцевальные челленджи',
+    allowCollab: false,
+    allowRemix: false
   },
   {
     id: 3,
@@ -106,7 +114,37 @@ const mockVideos: Video[] = [
     likes: 18756,
     comments: 967,
     shares: 1532,
-    isAI: true
+    isAI: true,
+    allowCollab: true,
+    allowRemix: true
+  },
+  {
+    id: 4,
+    username: '@remix_master',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=remix',
+    description: 'Ремикс от @ai_dreams - добавил визуал! 🎨🎵 #Collab',
+    videoUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d',
+    likes: 9876,
+    comments: 432,
+    shares: 789,
+    isAI: true,
+    originalAuthor: '@ai_dreams',
+    allowCollab: true,
+    allowRemix: false
+  },
+  {
+    id: 5,
+    username: '@collab_duo',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=duo',
+    description: 'Коллаб с @cosmic_creator 🤝✨ Вместе мы сила!',
+    videoUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f',
+    likes: 14567,
+    comments: 654,
+    shares: 1234,
+    isAI: true,
+    collabWith: ['@cosmic_creator', '@collab_duo'],
+    allowCollab: true,
+    allowRemix: true
   }
 ];
 
@@ -232,11 +270,48 @@ const Index = () => {
                 
                 <p className="text-white/90 mb-2">{video.description}</p>
                 
-                {video.trend && (
-                  <Badge variant="outline" className="border-primary/50 text-primary bg-primary/10 backdrop-blur-sm">
-                    🔥 {video.trend}
-                  </Badge>
-                )}
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {video.trend && (
+                    <Badge variant="outline" className="border-primary/50 text-primary bg-primary/10 backdrop-blur-sm">
+                      🔥 {video.trend}
+                    </Badge>
+                  )}
+                  
+                  {video.originalAuthor && (
+                    <Badge variant="outline" className="border-accent/50 text-accent bg-accent/10 backdrop-blur-sm">
+                      <Icon name="Shuffle" size={12} className="mr-1" />
+                      Ремикс {video.originalAuthor}
+                    </Badge>
+                  )}
+                  
+                  {video.collabWith && (
+                    <Badge variant="outline" className="border-secondary/50 text-secondary bg-secondary/10 backdrop-blur-sm">
+                      <Icon name="Users" size={12} className="mr-1" />
+                      Коллаб
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="flex gap-2 text-xs text-white/60">
+                  {video.allowCollab && (
+                    <span className="flex items-center gap-1">
+                      <Icon name="Handshake" size={12} />
+                      Коллаб разрешён
+                    </span>
+                  )}
+                  {video.allowRemix && (
+                    <span className="flex items-center gap-1">
+                      <Icon name="Sparkles" size={12} />
+                      Ремикс разрешён
+                    </span>
+                  )}
+                  {!video.allowCollab && !video.allowRemix && (
+                    <span className="flex items-center gap-1">
+                      <Icon name="Lock" size={12} />
+                      Только просмотр
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-col gap-4 items-center">
@@ -257,11 +332,26 @@ const Index = () => {
                   <span className="text-white text-sm font-semibold">{video.comments.toLocaleString()}</span>
                 </button>
 
-                <button className="flex flex-col items-center gap-1 transition-transform hover:scale-110">
-                  <div className="p-3 rounded-full bg-card/50 backdrop-blur-sm text-white">
-                    <Icon name="Share2" size={28} />
+                <button 
+                  disabled={!video.allowRemix}
+                  className={`flex flex-col items-center gap-1 transition-transform ${video.allowRemix ? 'hover:scale-110' : 'opacity-50 cursor-not-allowed'}`}
+                  title={video.allowRemix ? 'Создать ремикс' : 'Ремиксы запрещены автором'}
+                >
+                  <div className={`p-3 rounded-full backdrop-blur-sm ${video.allowRemix ? 'bg-secondary/90 text-white' : 'bg-card/50 text-white/50'}`}>
+                    <Icon name="Shuffle" size={28} />
                   </div>
-                  <span className="text-white text-sm font-semibold">{video.shares.toLocaleString()}</span>
+                  <span className="text-white text-xs">Ремикс</span>
+                </button>
+
+                <button 
+                  disabled={!video.allowCollab}
+                  className={`flex flex-col items-center gap-1 transition-transform ${video.allowCollab ? 'hover:scale-110' : 'opacity-50 cursor-not-allowed'}`}
+                  title={video.allowCollab ? 'Предложить коллаб' : 'Коллабы запрещены автором'}
+                >
+                  <div className={`p-3 rounded-full backdrop-blur-sm ${video.allowCollab ? 'bg-primary/90 text-white' : 'bg-card/50 text-white/50'}`}>
+                    <Icon name="Handshake" size={28} />
+                  </div>
+                  <span className="text-white text-xs">Коллаб</span>
                 </button>
 
                 <button className="flex flex-col items-center gap-1 transition-transform hover:scale-110">
