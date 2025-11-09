@@ -59,7 +59,7 @@ const mockVideos: Video[] = [
 const Index = () => {
   const [currentVideo, setCurrentVideo] = useState(0);
   const [liked, setLiked] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'trends' | 'upload' | 'profile'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'trends' | 'streams' | 'upload' | 'profile'>('home');
 
   const video = mockVideos[currentVideo];
 
@@ -194,6 +194,14 @@ const Index = () => {
           >
             <Icon name="TrendingUp" size={24} />
             <span className="text-xs">Тренды</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('streams')}
+            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'streams' ? 'text-primary' : 'text-muted-foreground'}`}
+          >
+            <Icon name="Radio" size={24} />
+            <span className="text-xs">Стримы</span>
           </button>
 
           <button 
