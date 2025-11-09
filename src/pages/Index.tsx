@@ -18,6 +18,60 @@ interface Video {
   trend?: string;
 }
 
+interface Stream {
+  id: number;
+  username: string;
+  avatar: string;
+  title: string;
+  thumbnail: string;
+  viewers: number;
+  category: string;
+  isLive: boolean;
+}
+
+const mockStreams: Stream[] = [
+  {
+    id: 1,
+    username: '@neon_gamer',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=neon',
+    title: 'Космический турнир по AI-играм 🎮',
+    thumbnail: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc',
+    viewers: 12453,
+    category: 'Игры',
+    isLive: true
+  },
+  {
+    id: 2,
+    username: '@music_ai',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=music',
+    title: 'Создаём хиты с AI в реальном времени 🎵',
+    thumbnail: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745',
+    viewers: 8921,
+    category: 'Музыка',
+    isLive: true
+  },
+  {
+    id: 3,
+    username: '@tech_wizard',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tech',
+    title: 'Собираю робота с нейросетью 🤖',
+    thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
+    viewers: 15234,
+    category: 'Технологии',
+    isLive: true
+  },
+  {
+    id: 4,
+    username: '@art_creator',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=art',
+    title: 'Рисую мир мечты в Midjourney ✨',
+    thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe',
+    viewers: 6782,
+    category: 'Творчество',
+    isLive: true
+  }
+];
+
 const mockVideos: Video[] = [
   {
     id: 1,
@@ -88,6 +142,66 @@ const Index = () => {
         </Button>
       </div>
 
+      {activeTab === 'streams' ? (
+        <div className="h-full w-full pt-20 pb-24 px-4 overflow-y-auto">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <div className="w-3 h-3 bg-accent rounded-full animate-pulse-glow" />
+              Прямые эфиры
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {mockStreams.map((stream) => (
+                <Card key={stream.id} className="bg-card/50 backdrop-blur-lg border-primary/30 overflow-hidden cursor-pointer hover:border-primary/60 transition-all hover:scale-[1.02] group">
+                  <div className="relative aspect-video">
+                    <img 
+                      src={stream.thumbnail} 
+                      alt={stream.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/80" />
+                    
+                    {stream.isLive && (
+                      <div className="absolute top-3 left-3">
+                        <Badge className="bg-accent text-white font-bold px-3 py-1 flex items-center gap-2 animate-fade-in">
+                          <div className="w-2 h-2 bg-white rounded-full animate-pulse-glow" />
+                          LIVE
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-background/80 backdrop-blur-sm text-white font-semibold px-2 py-1">
+                        <Icon name="Eye" size={14} className="inline mr-1" />
+                        {stream.viewers.toLocaleString()}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4">
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-10 w-10 border-2 border-primary">
+                        <AvatarImage src={stream.avatar} />
+                        <AvatarFallback>{stream.username[1]}</AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-semibold mb-1 group-hover:text-primary transition-colors">
+                          {stream.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">{stream.username}</p>
+                        <Badge variant="outline" className="mt-2 border-primary/50 text-primary text-xs">
+                          {stream.category}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="h-full w-full flex items-center justify-center pt-20 pb-24">
         <Card className="relative w-full max-w-md h-[calc(100vh-180px)] bg-card/50 backdrop-blur-lg border-primary/30 overflow-hidden rounded-3xl">
           <div 
@@ -177,6 +291,7 @@ const Index = () => {
           />
         </Card>
       </div>
+      )}
 
       <nav className="absolute bottom-0 left-0 right-0 z-20 bg-card/80 backdrop-blur-lg border-t border-primary/20">
         <div className="flex items-center justify-around py-3">
