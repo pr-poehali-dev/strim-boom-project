@@ -12,6 +12,8 @@ import { BuyBoombucksDialog } from '@/components/home/BuyBoombucksDialog';
 import { StreamView } from '@/components/stream/StreamView';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { RegisterForm } from '@/components/auth/RegisterForm';
+import { CreateStreamDialog } from '@/components/stream/CreateStreamDialog';
+import { BroadcastView } from '@/components/stream/BroadcastView';
 import { useAppState } from '@/hooks/useAppState';
 import { useStreams } from '@/hooks/useStreams';
 import { mockStreams, Stream } from '@/components/types';
@@ -22,7 +24,17 @@ const Index = () => {
   const cryptoWallet = 'UQCuFtQ2uMdPVRdhgEO_sOHhHwXZxXEG0anj-U0BRElk0zOk';
   const phoneNumber = '+79503994868';
   const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
-  const { streams } = useStreams();
+  const [createStreamOpen, setCreateStreamOpen] = useState(false);
+  const [broadcastStreamId, setBroadcastStreamId] = useState<number | null>(null);
+  const { streams, refetch: refetchStreams } = useStreams();
+
+  const handleStreamCreated = () => {
+    refetchStreams();
+  };
+
+  const handleStartBroadcast = async () => {
+    setCreateStreamOpen(true);
+  };
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -152,14 +164,17 @@ const Index = () => {
         </div>
       )}
 
-      <BottomNavigation 
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        showContentFilter={showContentFilter}
-        setShowContentFilter={setShowContentFilter}
-        mockVideos={mockStreams}
-        filteredVideos={filteredVideos}
-      />
+      {user && (
+        <BottomNavigation 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          showContentFilter={showContentFilter}
+          setShowContentFilter={setShowContentFilter}
+          mockVideos={mockStreams}
+          filteredVideos={filteredVideos}
+          onStartStream={handleStartBroadcast}
+        />
+      )}
 
       {showAdminLogin && !isAdminLoggedIn && (
         <AdminLogin 
@@ -183,6 +198,29 @@ const Index = () => {
           setUserBoombucks={setUserBoombucks}
           isStreamer={false}
           onClose={() => setSelectedStream(null)}
+        />
+      )}
+
+      {broadcastStreamId && (
+        <BroadcastView
+          streamId={broadcastStreamId}
+          onStop={() => {
+            setBroadcastStreamId(null);
+            refetchStreams();
+          }}
+        />
+      )}
+
+      {user && (
+        <CreateStreamDialog
+          open={createStreamOpen}
+          onOpenChange={setCreateStreamOpen}
+          userId={user.id}
+          onSuccess={() => {
+            handleStreamCreated();
+            const newStreamId = streams[0]?.id || 1;
+            setBroadcastStreamId(newStreamId);
+          }}
         />
       )}
     </div>

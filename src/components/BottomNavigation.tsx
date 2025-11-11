@@ -12,6 +12,7 @@ interface BottomNavigationProps {
   setShowContentFilter: (show: boolean) => void;
   mockVideos: Video[];
   filteredVideos: Video[];
+  onStartStream?: () => void;
 }
 
 export const BottomNavigation = memo(({ 
@@ -20,7 +21,8 @@ export const BottomNavigation = memo(({
   showContentFilter, 
   setShowContentFilter,
   mockVideos,
-  filteredVideos
+  filteredVideos,
+  onStartStream
 }: BottomNavigationProps) => {
   const blockedCount = useMemo(() => mockVideos.filter(v => v.isBlocked).length, [mockVideos]);
   const voiceSwappedCount = useMemo(() => mockVideos.filter(v => v.voiceSwapped).length, [mockVideos]);
@@ -68,11 +70,11 @@ export const BottomNavigation = memo(({
         </button>
 
         <button 
-          onClick={() => handleTabClick('upload')}
+          onClick={onStartStream}
           className="relative -mt-4"
         >
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent shadow-lg shadow-primary/50">
-            <Icon name="Plus" size={28} className="text-white" />
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-red-700 shadow-lg shadow-red-500/50">
+            <Icon name="Video" size={28} className="text-white" />
           </div>
         </button>
 
