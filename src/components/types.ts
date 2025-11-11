@@ -58,12 +58,23 @@ export interface AdCampaign {
 
 export interface Notification {
   id: string;
-  type: 'ad_request' | 'ad_approved' | 'ad_rejected' | 'ad_live' | 'payment_received';
+  type: 'ad_request' | 'ad_approved' | 'ad_rejected' | 'ad_live' | 'payment_received' | 'referral_reward';
   title: string;
   message: string;
   campaignId?: string;
   read: boolean;
   createdAt: Date;
+}
+
+export interface Referral {
+  id: string;
+  referrerId: number;
+  referredUserId: number;
+  referredUsername: string;
+  purchaseAmount: number;
+  rewardEarned: number;
+  createdAt: Date;
+  status: 'pending' | 'qualified' | 'rewarded';
 }
 
 export interface Stream {

@@ -4,17 +4,22 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Transaction } from './types';
+import { Transaction, Referral } from './types';
 import { WithdrawTab } from './profile/WithdrawTab';
 import { PaymentMethodsTab } from './profile/PaymentMethodsTab';
 import { AdvertisingTab } from './profile/AdvertisingTab';
 import { TransactionHistoryTab } from './profile/TransactionHistoryTab';
+import { ReferralTab } from './profile/ReferralTab';
+import { ReferralSimulator } from './ReferralSimulator';
 
 interface ProfilePageProps {
   userBoombucks: number;
   setUserBoombucks: (amount: number) => void;
   transactions: Transaction[];
   setTransactions: (transactions: Transaction[]) => void;
+  referrals: Referral[];
+  userId: number;
+  onSimulateReferralPurchase: (username: string, amount: number) => void;
 }
 
 interface PaymentMethod {
@@ -23,7 +28,8 @@ interface PaymentMethod {
   label: string;
 }
 
-export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions, setTransactions }: ProfilePageProps) => {
+export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions, setTransactions, referrals, userId, onSimulateReferralPurchase }: ProfilePageProps) => {
+  const totalReferralEarnings = referrals.filter(r => r.status === 'rewarded').reduce((sum, r) => sum + r.rewardEarned, 0);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     { type: 'card', value: '', label: 'Bank Card (RU)' },
     { type: 'yoomoney', value: '', label: 'YooMoney' },
@@ -102,18 +108,22 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
                   ≈ ₽{(userBoombucks * 100).toLocaleString()}
                 </p>
               </div>
-              <Badge className="bg-accent/20 text-accent text-lg px-4 py-2">
-                Active
-              </Badge>
+              <div className="flex flex-col gap-2 items-end">
+                <Badge className="bg-accent/20 text-accent text-lg px-4 py-2">
+                  Active
+                </Badge>
+                <ReferralSimulator onSimulatePurchase={onSimulateReferralPurchase} />
+              </div>
             </div>
           </div>
         </Card>
 
         <Tabs defaultValue="withdraw" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
             <TabsTrigger value="payment">Payment</TabsTrigger>
             <TabsTrigger value="advertising">Ad Sales</TabsTrigger>
+            <TabsTrigger value="referral">Referrals</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
@@ -142,6 +152,14 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
               adPrice={adPrice}
               setAdPrice={setAdPrice}
               handleSetAdPrice={handleSetAdPrice}
+            />
+          </TabsContent>
+
+          <TabsContent value="referral" className="space-y-4">
+            <ReferralTab
+              referrals={referrals}
+              userId={userId}
+              totalReferralEarnings={totalReferralEarnings}
             />
           </TabsContent>
 

@@ -12,7 +12,7 @@ import { BottomNavigation } from '@/components/BottomNavigation';
 import { ProfilePage } from '@/components/ProfilePage';
 import { AdvertisingMarketplace } from '@/components/AdvertisingMarketplace';
 import { NotificationCenter } from '@/components/NotificationCenter';
-import { mockVideos, mockStreams, Transaction, Notification } from '@/components/types';
+import { mockVideos, mockStreams, Transaction, Notification, Referral } from '@/components/types';
 
 const Index = () => {
   const [currentVideo, setCurrentVideo] = useState(0);
@@ -23,6 +23,7 @@ const Index = () => {
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
   const [buyAmount, setBuyAmount] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'EUR' | 'KZT' | 'RUB'>('RUB');
+  const currentUserId = 1;
   const [transactions, setTransactions] = useState<Transaction[]>([
     {
       id: '1',
@@ -74,6 +75,110 @@ const Index = () => {
   const handleClearAllNotifications = useCallback(() => {
     setNotifications([]);
   }, []);
+
+  const [referrals, setReferrals] = useState<Referral[]>([
+    {
+      id: '1',
+      referrerId: currentUserId,
+      referredUserId: 101,
+      referredUsername: '@newuser1',
+      purchaseAmount: 5,
+      rewardEarned: 1,
+      createdAt: new Date(Date.now() - 86400000 * 2),
+      status: 'rewarded'
+    },
+    {
+      id: '2',
+      referrerId: currentUserId,
+      referredUserId: 102,
+      referredUsername: '@newuser2',
+      purchaseAmount: 1,
+      rewardEarned: 0,
+      createdAt: new Date(Date.now() - 3600000),
+      status: 'pending'
+    }
+  ]);
+
+  const handleReferralPurchase = useCallback((referredUserId: number, referredUsername: string, purchaseAmount: number) => {
+    const existingReferral = referrals.find(r => r.referredUserId === referredUserId);
+    
+    if (existingReferral) {
+      const totalPurchase = existingReferral.purchaseAmount + purchaseAmount;
+      
+      if (existingReferral.status === 'pending' && totalPurchase >= 3) {
+        setReferrals(prev => prev.map(r => 
+          r.referredUserId === referredUserId 
+            ? { ...r, purchaseAmount: totalPurchase, status: 'rewarded' as const, rewardEarned: 1 }
+            : r
+        ));
+        
+        setUserBoombucks(prev => prev + 1);
+        
+        const newNotification: Notification = {
+          id: Date.now().toString(),
+          type: 'referral_reward',
+          title: 'Referral Reward!',
+          message: `${referredUsername} qualified! You earned 1 Boombuck`,
+          read: false,
+          createdAt: new Date()
+        };
+        setNotifications(prev => [newNotification, ...prev]);
+        
+        const rewardTransaction: Transaction = {
+          id: Date.now().toString(),
+          type: 'buy',
+          amount: 1,
+          description: `Referral reward from ${referredUsername}`,
+          date: new Date(),
+          status: 'completed'
+        };
+        setTransactions(prev => [rewardTransaction, ...prev]);
+      } else {
+        setReferrals(prev => prev.map(r => 
+          r.referredUserId === referredUserId 
+            ? { ...r, purchaseAmount: totalPurchase }
+            : r
+        ));
+      }
+    } else {
+      const newReferral: Referral = {
+        id: Date.now().toString(),
+        referrerId: currentUserId,
+        referredUserId,
+        referredUsername,
+        purchaseAmount,
+        rewardEarned: purchaseAmount >= 3 ? 1 : 0,
+        createdAt: new Date(),
+        status: purchaseAmount >= 3 ? 'rewarded' : 'pending'
+      };
+      
+      setReferrals(prev => [newReferral, ...prev]);
+      
+      if (purchaseAmount >= 3) {
+        setUserBoombucks(prev => prev + 1);
+        
+        const newNotification: Notification = {
+          id: Date.now().toString(),
+          type: 'referral_reward',
+          title: 'Referral Reward!',
+          message: `${referredUsername} qualified! You earned 1 Boombuck`,
+          read: false,
+          createdAt: new Date()
+        };
+        setNotifications(prev => [newNotification, ...prev]);
+        
+        const rewardTransaction: Transaction = {
+          id: Date.now().toString(),
+          type: 'buy',
+          amount: 1,
+          description: `Referral reward from ${referredUsername}`,
+          date: new Date(),
+          status: 'completed'
+        };
+        setTransactions(prev => [rewardTransaction, ...prev]);
+      }
+    }
+  }, [referrals, currentUserId, setUserBoombucks, setNotifications, setTransactions]);
 
   const filteredVideos = useMemo(() => {
     return showContentFilter 
@@ -344,6 +449,9 @@ const Index = () => {
           setUserBoombucks={setUserBoombucks}
           transactions={transactions}
           setTransactions={setTransactions}
+          referrals={referrals}
+          userId={currentUserId}
+          onSimulateReferralPurchase={handleReferralPurchase}
         />
       ) : activeTab === 'ads' ? (
         <AdvertisingMarketplace 
