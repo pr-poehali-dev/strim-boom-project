@@ -1,5 +1,4 @@
 import { memo, useMemo, useRef, useEffect, useState, useCallback } from 'react';
-import { FixedSizeList } from 'react-window';
 import { Stream } from './types';
 import { StreamCard } from './StreamCard';
 
@@ -111,55 +110,23 @@ export const StreamsList = memo(({ streams: initialStreams, onStreamClick }: Str
     }
   }, [streams.length, isNextPageLoading]);
 
-  const rowCount = useMemo(() => {
-    const baseCount = Math.ceil(streams.length / itemsPerRow);
-    return hasNextPage ? baseCount + 1 : baseCount;
-  }, [streams.length, itemsPerRow, hasNextPage]);
-
-  const isItemLoaded = useCallback((index: number) => {
-    return !hasNextPage || index < Math.ceil(streams.length / itemsPerRow);
-  }, [hasNextPage, streams.length, itemsPerRow]);
-
-  const Row = useCallback(({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const startIndex = index * itemsPerRow;
-    
-    if (!isItemLoaded(index)) {
-      return (
-        <div style={style} className="flex items-center justify-center">
-          <div className="text-white text-lg">Загрузка...</div>
-        </div>
-      );
-    }
-    
-    const items = [];
-
-    for (let i = 0; i < itemsPerRow; i++) {
-      const streamIndex = startIndex + i;
-      if (streamIndex < streams.length) {
-        items.push(
-          <div
-            key={streams[streamIndex].id}
-            style={{
-              width: itemsPerRow === 2 ? '50%' : '100%',
-              display: 'inline-block',
-              verticalAlign: 'top'
-            }}
-          >
-            <StreamCard 
-              stream={streams[streamIndex]} 
-              onClick={onStreamClick}
-            />
-          </div>
-        );
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      
+      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+      
+      if (scrollHeight - scrollTop <= clientHeight * 1.5 && !isNextPageLoading && hasNextPage) {
+        loadNextPage();
       }
-    }
+    };
 
-    return (
-      <div style={style}>
-        {items}
-      </div>
-    );
-  }, [streams, itemsPerRow, isItemLoaded]);
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [isNextPageLoading, hasNextPage, loadNextPage]);
 
   const pullProgress = Math.min(pullDistance / 80, 1);
 
@@ -202,28 +169,26 @@ export const StreamsList = memo(({ streams: initialStreams, onStreamClick }: Str
           Прямые эфиры ({streams.length})
         </h2>
         
-        {dimensions.height > 0 && (
-          <FixedSizeList
-            height={dimensions.height - 80}
-            itemCount={rowCount}
-            itemSize={380}
-            width="100%"
-            overscanCount={2}
-            onScroll={({ scrollOffset }) => {
-              const container = containerRef.current;
-              if (!container) return;
-              
-              const scrollHeight = container.scrollHeight;
-              const clientHeight = dimensions.height - 80;
-              
-              if (scrollHeight - scrollOffset <= clientHeight * 1.5 && !isNextPageLoading && hasNextPage) {
-                loadNextPage();
-              }
-            }}
-          >
-            {Row}
-          </FixedSizeList>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {streams.map((stream) => (
+            <StreamCard 
+              key={stream.id}
+              stream={stream} 
+              onClick={onStreamClick}
+            />
+          ))}
+          
+          {isNextPageLoading && (
+            <div className="col-span-full flex items-center justify-center py-8">
+              <div className="animate-spin">
+                <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
