@@ -10,7 +10,7 @@ import { VideoCard } from '@/components/VideoCard';
 import { StreamsList } from '@/components/StreamsList';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { ProfilePage } from '@/components/ProfilePage';
-import { mockVideos, mockStreams } from '@/components/types';
+import { mockVideos, mockStreams, Transaction } from '@/components/types';
 
 const Index = () => {
   const [currentVideo, setCurrentVideo] = useState(0);
@@ -20,7 +20,26 @@ const Index = () => {
   const [showContentFilter, setShowContentFilter] = useState(true);
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
   const [buyAmount, setBuyAmount] = useState('');
-  const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'EUR' | 'KZT'>('USD');
+  const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'EUR' | 'KZT' | 'RUB'>('RUB');
+  const [transactions, setTransactions] = useState<Transaction[]>([
+    {
+      id: '1',
+      type: 'buy',
+      amount: 500,
+      currency: 'RUB',
+      description: 'Purchased 5 Boombucks',
+      date: new Date(Date.now() - 86400000 * 2),
+      status: 'completed'
+    },
+    {
+      id: '2',
+      type: 'donation_sent',
+      amount: 50,
+      description: 'Donation to @cyber_artist',
+      date: new Date(Date.now() - 86400000),
+      status: 'completed'
+    }
+  ]);
 
   const filteredVideos = useMemo(() => {
     return showContentFilter 
@@ -45,10 +64,11 @@ const Index = () => {
   const exchangeRates = useMemo(() => ({
     USD: 95,
     EUR: 105,
-    KZT: 0.20
+    KZT: 0.20,
+    RUB: 1
   }), []);
 
-  const calculateBoombucks = useCallback((amount: string, currency: 'USD' | 'EUR' | 'KZT') => {
+  const calculateBoombucks = useCallback((amount: string, currency: 'USD' | 'EUR' | 'KZT' | 'RUB') => {
     const value = parseFloat(amount);
     if (isNaN(value) || value <= 0) return 0;
     const rubAmount = value * exchangeRates[currency];
@@ -59,6 +79,18 @@ const Index = () => {
     const boombucksToAdd = calculateBoombucks(buyAmount, selectedCurrency);
     if (boombucksToAdd > 0) {
       setUserBoombucks(userBoombucks + boombucksToAdd);
+      
+      const newTransaction: Transaction = {
+        id: Date.now().toString(),
+        type: 'buy',
+        amount: boombucksToAdd,
+        currency: selectedCurrency,
+        description: `Purchased ${boombucksToAdd} Boombucks with ${selectedCurrency}`,
+        date: new Date(),
+        status: 'completed'
+      };
+      setTransactions(prev => [newTransaction, ...prev]);
+      
       setBuyDialogOpen(false);
       setBuyAmount('');
     }
@@ -106,12 +138,19 @@ const Index = () => {
                   </div>
                 </div>
 
-                <Tabs value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as 'USD' | 'EUR' | 'KZT')} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                <Tabs value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as 'USD' | 'EUR' | 'KZT' | 'RUB')} className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="RUB">RUB</TabsTrigger>
                     <TabsTrigger value="USD">USD</TabsTrigger>
                     <TabsTrigger value="EUR">EUR</TabsTrigger>
                     <TabsTrigger value="KZT">KZT</TabsTrigger>
                   </TabsList>
+                  <TabsContent value="RUB" className="space-y-2">
+                    <div className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Icon name="Banknote" size={16} />
+                      Direct purchase: ₽100 = 1 Boombuck
+                    </div>
+                  </TabsContent>
                   <TabsContent value="USD" className="space-y-2">
                     <div className="text-sm text-muted-foreground flex items-center gap-2">
                       <Icon name="DollarSign" size={16} />
@@ -142,6 +181,17 @@ const Index = () => {
                     className="bg-background/50"
                   />
                   <div className="flex gap-2">
+                    {selectedCurrency === 'RUB' && [100, 500, 1000, 5000].map(amount => (
+                      <Button 
+                        key={amount}
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setBuyAmount(amount.toString())}
+                        className="flex-1"
+                      >
+                        ₽{amount}
+                      </Button>
+                    ))}
                     {selectedCurrency === 'USD' && [10, 50, 100, 500].map(amount => (
                       <Button 
                         key={amount}
@@ -183,15 +233,18 @@ const Index = () => {
                     <div className="flex justify-between text-sm">
                       <span>Amount:</span>
                       <span className="font-bold">
+                        {selectedCurrency === 'RUB' && `₽${buyAmount}`}
                         {selectedCurrency === 'USD' && `$${buyAmount}`}
                         {selectedCurrency === 'EUR' && `€${buyAmount}`}
                         {selectedCurrency === 'KZT' && `₸${buyAmount}`}
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span>In Rubles:</span>
-                      <span>₽{(parseFloat(buyAmount) * exchangeRates[selectedCurrency]).toFixed(2)}</span>
-                    </div>
+                    {selectedCurrency !== 'RUB' && (
+                      <div className="flex justify-between text-sm">
+                        <span>In Rubles:</span>
+                        <span>₽{(parseFloat(buyAmount) * exchangeRates[selectedCurrency]).toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-lg font-bold">
                       <span className="text-accent">You'll receive:</span>
                       <span className="text-accent flex items-center gap-1">
@@ -249,6 +302,8 @@ const Index = () => {
         <ProfilePage 
           userBoombucks={userBoombucks}
           setUserBoombucks={setUserBoombucks}
+          transactions={transactions}
+          setTransactions={setTransactions}
         />
       ) : (
         <div className="h-full w-full flex items-center justify-center pt-20 pb-24">

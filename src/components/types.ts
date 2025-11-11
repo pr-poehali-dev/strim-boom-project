@@ -18,6 +18,18 @@ export interface Video {
   hasMusic?: boolean;
   voiceSwapped?: boolean;
   boombucks?: number;
+  hasAd?: boolean;
+  adPrice?: number;
+}
+
+export interface Transaction {
+  id: string;
+  type: 'buy' | 'withdraw' | 'donation_sent' | 'donation_received' | 'ad_purchase';
+  amount: number;
+  currency?: string;
+  description: string;
+  date: Date;
+  status: 'completed' | 'pending' | 'failed';
 }
 
 export interface Stream {
