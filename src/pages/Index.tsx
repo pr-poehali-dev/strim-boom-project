@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Dialog } from '@/components/ui/dialog';
 import { VideoCard } from '@/components/VideoCard';
 import { StreamsList } from '@/components/StreamsList';
@@ -8,13 +9,15 @@ import { AdminLogin } from '@/components/AdminLogin';
 import { AdminPanel } from '@/components/AdminPanel';
 import { AppHeader } from '@/components/home/AppHeader';
 import { BuyBoombucksDialog } from '@/components/home/BuyBoombucksDialog';
+import { StreamView } from '@/components/stream/StreamView';
 import { useAppState } from '@/hooks/useAppState';
-import { mockStreams } from '@/components/types';
+import { mockStreams, Stream } from '@/components/types';
 
 const Index = () => {
   const currentUserId = 1;
   const cryptoWallet = 'UQCuFtQ2uMdPVRdhgEO_sOHhHwXZxXEG0anj-U0BRElk0zOk';
   const phoneNumber = '+79503994868';
+  const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
 
   const {
     currentVideo,
@@ -84,7 +87,10 @@ const Index = () => {
       </Dialog>
 
       {activeTab === 'streams' ? (
-        <StreamsList streams={mockStreams} />
+        <StreamsList 
+          streams={mockStreams} 
+          onStreamClick={setSelectedStream}
+        />
       ) : activeTab === 'profile' ? (
         <ProfilePage 
           userBoombucks={userBoombucks}
@@ -139,6 +145,16 @@ const Index = () => {
       {isAdminLoggedIn && (
         <AdminPanel 
           onClose={() => setIsAdminLoggedIn(false)}
+        />
+      )}
+
+      {selectedStream && (
+        <StreamView
+          stream={selectedStream}
+          userBoombucks={userBoombucks}
+          setUserBoombucks={setUserBoombucks}
+          isStreamer={false}
+          onClose={() => setSelectedStream(null)}
         />
       )}
     </div>

@@ -8,9 +8,10 @@ const { FixedSizeList } = ReactWindow;
 
 interface StreamsListProps {
   streams: Stream[];
+  onStreamClick?: (stream: Stream) => void;
 }
 
-export const StreamsList = memo(({ streams: initialStreams }: StreamsListProps) => {
+export const StreamsList = memo(({ streams: initialStreams, onStreamClick }: StreamsListProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [streams, setStreams] = useState(initialStreams);
@@ -147,7 +148,10 @@ export const StreamsList = memo(({ streams: initialStreams }: StreamsListProps) 
               verticalAlign: 'top'
             }}
           >
-            <StreamCard stream={streams[streamIndex]} />
+            <StreamCard 
+              stream={streams[streamIndex]} 
+              onClick={onStreamClick}
+            />
           </div>
         );
       }

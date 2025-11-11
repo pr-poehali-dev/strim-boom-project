@@ -8,12 +8,16 @@ import { Stream } from './types';
 interface StreamCardProps {
   stream: Stream;
   style?: React.CSSProperties;
+  onClick?: (stream: Stream) => void;
 }
 
-export const StreamCard = memo(({ stream, style }: StreamCardProps) => {
+export const StreamCard = memo(({ stream, style, onClick }: StreamCardProps) => {
   return (
     <div style={style} className="px-2">
-      <Card className="bg-card/50 backdrop-blur-lg border-primary/30 overflow-hidden group cursor-pointer hover:border-primary/60 transition-all duration-300 hover:scale-[1.02]">
+      <Card 
+        className="bg-card/50 backdrop-blur-lg border-primary/30 overflow-hidden group cursor-pointer hover:border-primary/60 transition-all duration-300 hover:scale-[1.02]"
+        onClick={() => onClick?.(stream)}
+      >
         <div className="relative aspect-video overflow-hidden">
           <img 
             src={stream.thumbnail} 

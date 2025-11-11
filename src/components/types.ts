@@ -86,6 +86,16 @@ export interface Stream {
   viewers: number;
   category: string;
   isLive: boolean;
+  ttsEnabled?: boolean;
+  ttsVoice?: 'male1' | 'male2' | 'female';
+}
+
+export interface DonationMessage {
+  id: string;
+  username: string;
+  amount: number;
+  message: string;
+  timestamp: Date;
 }
 
 export const mockStreams: Stream[] = [
