@@ -1,0 +1,29 @@
+{
+  "tests": [
+    {
+      "name": "Get user referrals",
+      "method": "GET",
+      "path": "/?user_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "referrals": []
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create referral record",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "referrer_id": 1,
+        "referred_user_id": 1,
+        "purchase_amount": 5
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

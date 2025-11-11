@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Get user transactions",
+      "method": "GET",
+      "path": "/?user_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "transactions": []
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create buy transaction",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "user_id": 1,
+        "type": "buy",
+        "amount": 10,
+        "currency": "RUB",
+        "description": "Purchased 10 BBS"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "transaction": {
+          "type": "buy",
+          "amount": 10
+        }
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

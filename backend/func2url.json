@@ -1,4 +1,6 @@
 {
+  "transactions": "https://functions.poehali.dev/c17a5ef7-015a-48f6-9679-2e3a240bcee7",
+  "referrals": "https://functions.poehali.dev/3b4f1b64-9cc0-475a-8af2-484818014cce",
   "donations": "https://functions.poehali.dev/32dd2c72-b316-4678-907d-c315427d7b66",
   "auth": "https://functions.poehali.dev/a9383ee1-ee25-4a83-a066-7f3e8b8c9fac",
   "streams": "https://functions.poehali.dev/daff0434-9d18-4277-8d13-6fe57cf35ba0",
