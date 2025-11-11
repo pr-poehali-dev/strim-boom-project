@@ -1,4 +1,10 @@
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,6 +26,11 @@ interface Video {
   allowRemix: boolean;
   originalAuthor?: string;
   collabWith?: string[];
+  isBlocked?: boolean;
+  blockReason?: string;
+  hasMusic?: boolean;
+  voiceSwapped?: boolean;
+  boombucks?: number;
 }
 
 interface Stream {
@@ -89,7 +100,8 @@ const mockVideos: Video[] = [
     isAI: true,
     trend: 'Космические визуализации',
     allowCollab: true,
-    allowRemix: false
+    allowRemix: false,
+    boombucks: 234
   },
   {
     id: 2,
@@ -103,7 +115,10 @@ const mockVideos: Video[] = [
     isAI: false,
     trend: 'Танцевальные челленджи',
     allowCollab: false,
-    allowRemix: false
+    allowRemix: false,
+    hasMusic: true,
+    voiceSwapped: true,
+    boombucks: 567
   },
   {
     id: 3,
@@ -116,7 +131,8 @@ const mockVideos: Video[] = [
     shares: 1532,
     isAI: true,
     allowCollab: true,
-    allowRemix: true
+    allowRemix: true,
+    boombucks: 1205
   },
   {
     id: 4,
@@ -130,7 +146,8 @@ const mockVideos: Video[] = [
     isAI: true,
     originalAuthor: '@ai_dreams',
     allowCollab: true,
-    allowRemix: false
+    allowRemix: false,
+    boombucks: 89
   },
   {
     id: 5,
@@ -144,7 +161,24 @@ const mockVideos: Video[] = [
     isAI: true,
     collabWith: ['@cosmic_creator', '@collab_duo'],
     allowCollab: true,
-    allowRemix: true
+    allowRemix: true,
+    boombucks: 432
+  },
+  {
+    id: 6,
+    username: '@blocked_user',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=blocked',
+    description: 'Запрещённый контент',
+    videoUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d',
+    likes: 0,
+    comments: 0,
+    shares: 0,
+    isAI: false,
+    allowCollab: false,
+    allowRemix: false,
+    isBlocked: true,
+    blockReason: 'Нарушение законодательства',
+    boombucks: 0
   }
 ];
 
@@ -152,17 +186,40 @@ const Index = () => {
   const [currentVideo, setCurrentVideo] = useState(0);
   const [liked, setLiked] = useState(false);
   const [activeTab, setActiveTab] = useState<'home' | 'trends' | 'streams' | 'upload' | 'profile'>('home');
+  const [donateOpen, setDonateOpen] = useState(false);
+  const [donateAmount, setDonateAmount] = useState('');
+  const [userBoombucks, setUserBoombucks] = useState(1250);
+  const [showContentFilter, setShowContentFilter] = useState(true);
 
-  const video = mockVideos[currentVideo];
+  const filteredVideos = showContentFilter 
+    ? mockVideos.filter(v => !v.isBlocked) 
+    : mockVideos;
+
+  const video = filteredVideos[currentVideo] || mockVideos[0];
 
   const handleSwipe = (direction: 'up' | 'down') => {
-    if (direction === 'up' && currentVideo < mockVideos.length - 1) {
+    if (direction === 'up' && currentVideo < filteredVideos.length - 1) {
       setCurrentVideo(currentVideo + 1);
       setLiked(false);
     } else if (direction === 'down' && currentVideo > 0) {
       setCurrentVideo(currentVideo - 1);
       setLiked(false);
     }
+  };
+
+  const handleDonate = () => {
+    const amount = parseInt(donateAmount);
+    if (amount > 0 && amount <= userBoombucks) {
+      setUserBoombucks(userBoombucks - amount);
+      setDonateOpen(false);
+      setDonateAmount('');
+    }
+  };
+
+  const convertToRub = (boombucks: number) => {
+    const rubles = boombucks * 100;
+    const afterFee = rubles * 0.7;
+    return afterFee.toFixed(2);
   };
 
   return (
@@ -175,9 +232,15 @@ const Index = () => {
           alt="STREAM-BOOM" 
           className="h-12 w-auto animate-pulse-glow"
         />
-        <Button variant="ghost" size="icon" className="text-white">
-          <Icon name="Search" size={24} />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Badge className="bg-accent/90 text-white font-bold px-3 py-1.5 flex items-center gap-1.5">
+            <Icon name="Coins" size={16} />
+            {userBoombucks} Boombucks
+          </Badge>
+          <Button variant="ghost" size="icon" className="text-white">
+            <Icon name="Search" size={24} />
+          </Button>
+        </div>
       </div>
 
       {activeTab === 'streams' ? (
@@ -249,13 +312,29 @@ const Index = () => {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/90" />
           </div>
 
-          {video.isAI && (
-            <div className="absolute top-4 left-4 z-10 animate-fade-in">
+          <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 animate-fade-in">
+            {video.isAI && (
               <Badge className="bg-primary/90 text-primary-foreground backdrop-blur-sm text-base px-3 py-1 font-bold">
                 И И
               </Badge>
-            </div>
-          )}
+            )}
+            
+            {video.isBlocked && (
+              <Badge className="bg-red-500/90 text-white backdrop-blur-sm px-3 py-1 font-bold flex items-center gap-1">
+                <Icon name="ShieldAlert" size={14} />
+                BLOCKED
+              </Badge>
+            )}
+          </div>
+          
+          <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end animate-fade-in">
+            {video.boombucks && video.boombucks > 0 && (
+              <Badge className="bg-accent/90 text-white backdrop-blur-sm px-3 py-1.5 font-bold flex items-center gap-1.5">
+                <Icon name="Coins" size={14} />
+                {video.boombucks} BB
+              </Badge>
+            )}
+          </div>
 
           <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
             <div className="flex items-start gap-4">
@@ -290,9 +369,23 @@ const Index = () => {
                       Коллаб
                     </Badge>
                   )}
+                  
+                  {video.voiceSwapped && (
+                    <Badge variant="outline" className="border-purple-500/50 text-purple-400 bg-purple-500/10 backdrop-blur-sm">
+                      <Icon name="Music" size={12} className="mr-1" />
+                      Voice Swapped
+                    </Badge>
+                  )}
+                  
+                  {video.isBlocked && (
+                    <Badge variant="outline" className="border-red-500/50 text-red-400 bg-red-500/10 backdrop-blur-sm">
+                      <Icon name="ShieldAlert" size={12} className="mr-1" />
+                      Blocked
+                    </Badge>
+                  )}
                 </div>
                 
-                <div className="flex gap-2 text-xs text-white/60">
+                <div className="flex flex-wrap gap-2 text-xs text-white/60 mt-2">
                   {video.allowCollab && (
                     <span className="flex items-center gap-1">
                       <Icon name="Handshake" size={12} />
@@ -354,12 +447,119 @@ const Index = () => {
                   <span className="text-white text-xs">Коллаб</span>
                 </button>
 
-                <button className="flex flex-col items-center gap-1 transition-transform hover:scale-110">
-                  <div className="p-3 rounded-full bg-accent/90 backdrop-blur-sm text-white">
-                    <Icon name="Coins" size={28} />
-                  </div>
-                  <span className="text-white text-xs">Донат</span>
-                </button>
+                <Dialog open={donateOpen} onOpenChange={setDonateOpen}>
+                  <DialogTrigger asChild>
+                    <button className="flex flex-col items-center gap-1 transition-transform hover:scale-110">
+                      <div className="p-3 rounded-full bg-accent/90 backdrop-blur-sm text-white">
+                        <Icon name="Coins" size={28} />
+                      </div>
+                      <span className="text-white text-xs">Донат</span>
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-card/95 backdrop-blur-xl border-primary/30">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                        <Icon name="Coins" className="text-accent" />
+                        Donate Boombucks
+                      </DialogTitle>
+                      <DialogDescription>
+                        Send Boombucks to {video.username}
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Your Balance</Label>
+                        <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg">
+                          <Icon name="Wallet" className="text-accent" />
+                          <span className="font-bold text-lg">{userBoombucks} Boombucks</span>
+                          <span className="text-muted-foreground text-sm ml-auto">
+                            ≈ ${(userBoombucks * 100 / 100).toFixed(0)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Amount (Boombucks)</Label>
+                        <Input 
+                          type="number" 
+                          placeholder="Enter amount"
+                          value={donateAmount}
+                          onChange={(e) => setDonateAmount(e.target.value)}
+                          max={userBoombucks}
+                          className="bg-background/50"
+                        />
+                        <div className="flex gap-2">
+                          {[10, 50, 100, 500].map(amount => (
+                            <Button 
+                              key={amount}
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setDonateAmount(amount.toString())}
+                              className="flex-1"
+                            >
+                              {amount}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {donateAmount && (
+                        <Alert className="bg-primary/10 border-primary/30">
+                          <Icon name="Info" className="h-4 w-4" />
+                          <AlertDescription>
+                            <div className="space-y-1 text-sm">
+                              <div className="flex justify-between">
+                                <span>Amount:</span>
+                                <span className="font-bold">{donateAmount} Boombucks</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Value:</span>
+                                <span>₽{(parseInt(donateAmount) * 100).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between text-muted-foreground">
+                                <span>Creator receives (after 30% fee):</span>
+                                <span className="font-bold text-accent">₽{convertToRub(parseInt(donateAmount))}</span>
+                              </div>
+                            </div>
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      <div className="bg-background/30 p-3 rounded-lg space-y-1 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Icon name="Coins" size={14} className="text-accent" />
+                          <span>1 Boombuck = ₽100</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Icon name="TrendingDown" size={14} className="text-orange-400" />
+                          <span>30% platform fee on withdrawals</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Icon name="Zap" size={14} className="text-green-400" />
+                          <span>Instant delivery</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <DialogFooter>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setDonateOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={handleDonate}
+                        disabled={!donateAmount || parseInt(donateAmount) > userBoombucks || parseInt(donateAmount) <= 0}
+                        className="bg-accent hover:bg-accent/90"
+                      >
+                        <Icon name="Send" className="mr-2" size={16} />
+                        Send Donation
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </div>
@@ -418,13 +618,75 @@ const Index = () => {
             </div>
           </button>
 
-          <button 
-            onClick={() => setActiveTab('trends')}
-            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'trends' ? 'text-primary' : 'text-muted-foreground'}`}
-          >
-            <Icon name="Users" size={24} />
-            <span className="text-xs">Коллабы</span>
-          </button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <button className="flex flex-col items-center gap-1 transition-colors text-muted-foreground">
+                <Icon name="ShieldCheck" size={24} />
+                <span className="text-xs">Фильтр</span>
+              </button>
+            </DialogTrigger>
+            <DialogContent className="bg-card/95 backdrop-blur-xl border-primary/30">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                  <Icon name="ShieldCheck" className="text-primary" />
+                  Content Filter
+                </DialogTitle>
+                <DialogDescription>
+                  Control what content you see
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4 py-4">
+                <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg">
+                  <div className="space-y-1">
+                    <div className="font-semibold flex items-center gap-2">
+                      <Icon name="ShieldAlert" className="text-red-400" size={18} />
+                      Block Illegal Content
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Hide videos blocked by government regulations
+                    </p>
+                  </div>
+                  <Button
+                    variant={showContentFilter ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowContentFilter(!showContentFilter)}
+                  >
+                    {showContentFilter ? 'ON' : 'OFF'}
+                  </Button>
+                </div>
+
+                <Alert className="bg-orange-500/10 border-orange-500/30">
+                  <Icon name="Info" className="h-4 w-4 text-orange-400" />
+                  <AlertDescription className="text-sm">
+                    <strong>Copyright Protection:</strong> All videos with copyrighted music are automatically processed with voice-swapping technology (female ↔ male) to avoid copyright strikes.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-2 p-4 bg-background/30 rounded-lg">
+                  <div className="font-semibold text-sm mb-2">Filter Statistics</div>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Total Videos:</span>
+                      <span className="font-bold">{mockVideos.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Blocked Content:</span>
+                      <span className="font-bold text-red-400">{mockVideos.filter(v => v.isBlocked).length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Voice-Swapped:</span>
+                      <span className="font-bold text-purple-400">{mockVideos.filter(v => v.voiceSwapped).length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Available:</span>
+                      <span className="font-bold text-green-400">{filteredVideos.length}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           <button 
             onClick={() => setActiveTab('profile')}
