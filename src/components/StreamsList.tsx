@@ -1,8 +1,10 @@
 import { memo, useMemo, useRef, useEffect, useState, useCallback } from 'react';
-import { FixedSizeList } from 'react-window';
+import ReactWindow from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { Stream } from './types';
 import { StreamCard } from './StreamCard';
+
+const { FixedSizeList } = ReactWindow;
 
 interface StreamsListProps {
   streams: Stream[];
@@ -14,6 +16,9 @@ export const StreamsList = memo(({ streams: initialStreams }: StreamsListProps) 
   const [streams, setStreams] = useState(initialStreams);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [isNextPageLoading, setIsNextPageLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullStart, setPullStart] = useState(0);
+  const [pullDistance, setPullDistance] = useState(0);
 
   useEffect(() => {
     setStreams(initialStreams);
@@ -32,6 +37,51 @@ export const StreamsList = memo(({ streams: initialStreams }: StreamsListProps) 
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
+
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    if (containerRef.current && containerRef.current.scrollTop === 0) {
+      setPullStart(e.touches[0].clientY);
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (pullStart > 0 && containerRef.current && containerRef.current.scrollTop === 0) {
+      const distance = e.touches[0].clientY - pullStart;
+      if (distance > 0) {
+        setPullDistance(Math.min(distance, 150));
+      }
+    }
+  }, [pullStart]);
+
+  const handleTouchEnd = useCallback(async () => {
+    if (pullDistance > 80 && !isRefreshing) {
+      setIsRefreshing(true);
+      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      setStreams(initialStreams);
+      setHasNextPage(true);
+      setIsRefreshing(false);
+    }
+    
+    setPullStart(0);
+    setPullDistance(0);
+  }, [pullDistance, isRefreshing, initialStreams]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('touchstart', handleTouchStart as any);
+    container.addEventListener('touchmove', handleTouchMove as any);
+    container.addEventListener('touchend', handleTouchEnd as any);
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart as any);
+      container.removeEventListener('touchmove', handleTouchMove as any);
+      container.removeEventListener('touchend', handleTouchEnd as any);
+    };
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   const itemsPerRow = useMemo(() => {
     return dimensions.width >= 768 ? 2 : 1;
@@ -110,8 +160,41 @@ export const StreamsList = memo(({ streams: initialStreams }: StreamsListProps) 
     );
   }, [streams, itemsPerRow, isItemLoaded]);
 
+  const pullProgress = Math.min(pullDistance / 80, 1);
+
   return (
-    <div ref={containerRef} className="h-full w-full pt-20 pb-24 px-4">
+    <div ref={containerRef} className="h-full w-full pt-20 pb-24 px-4 relative overflow-y-auto">
+      {pullDistance > 0 && (
+        <div 
+          className="absolute top-20 left-0 right-0 flex items-center justify-center z-30 transition-opacity"
+          style={{ 
+            opacity: pullProgress,
+            transform: `translateY(${pullDistance - 80}px)`
+          }}
+        >
+          <div className="bg-card/90 backdrop-blur-xl border border-primary/30 rounded-full p-3 shadow-lg">
+            {isRefreshing ? (
+              <div className="animate-spin">
+                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              </div>
+            ) : (
+              <svg 
+                className={`w-6 h-6 text-primary transition-transform ${pullProgress >= 1 ? 'rotate-180' : ''}`}
+                style={{ transform: `rotate(${pullProgress * 180}deg)` }}
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto">
         <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
           <div className="w-3 h-3 bg-accent rounded-full animate-pulse-glow" />
