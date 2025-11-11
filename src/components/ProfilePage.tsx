@@ -61,7 +61,7 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
         id: Date.now().toString(),
         type: 'withdraw',
         amount: amount,
-        description: `Заявка на вывод ${amount} BB на ${selectedMethod}: ${savedMethods[selectedMethod].substring(0, 10)}...`,
+        description: `Заявка на вывод ${amount} BBS на ${selectedMethod}: ${savedMethods[selectedMethod].substring(0, 10)}...`,
         date: new Date(),
         status: 'pending'
       };
@@ -103,7 +103,7 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
                 <p className="text-sm text-muted-foreground">Your Balance</p>
                 <p className="text-3xl font-bold text-white flex items-center gap-2">
                   <Icon name="Coins" className="text-accent" size={32} />
-                  {userBoombucks} BB
+                  {userBoombucks} BBS
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   ≈ ₽{(userBoombucks * 100).toLocaleString()}

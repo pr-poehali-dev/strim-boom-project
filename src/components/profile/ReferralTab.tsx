@@ -69,7 +69,7 @@ export const ReferralTab = memo(({ referrals, userId, totalReferralEarnings }: R
               <p className="text-sm text-muted-foreground">Total Earned</p>
               <p className="text-2xl font-bold text-accent flex items-center gap-1 justify-end">
                 <Icon name="Coins" size={24} />
-                {totalReferralEarnings} BB
+                {totalReferralEarnings} BBS
               </p>
             </div>
           </div>
@@ -186,7 +186,7 @@ export const ReferralTab = memo(({ referrals, userId, totalReferralEarnings }: R
                       {referral.status === 'rewarded' && (
                         <span className="flex items-center gap-1 text-accent">
                           <Icon name="Coins" size={10} />
-                          +{referral.rewardEarned} BB
+                          +{referral.rewardEarned} BBS
                         </span>
                       )}
                     </div>
@@ -194,7 +194,7 @@ export const ReferralTab = memo(({ referrals, userId, totalReferralEarnings }: R
                 </div>
                 <Badge className={getStatusColor(referral.status)}>
                   <Icon name={getStatusIcon(referral.status)} size={12} className="mr-1" />
-                  {referral.status === 'pending' && `${referral.purchaseAmount}/3 BB`}
+                  {referral.status === 'pending' && `${referral.purchaseAmount}/3 BBS`}
                   {referral.status === 'qualified' && 'Qualified'}
                   {referral.status === 'rewarded' && 'Rewarded'}
                 </Badge>

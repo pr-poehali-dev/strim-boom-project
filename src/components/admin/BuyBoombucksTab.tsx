@@ -51,7 +51,7 @@ export const BuyBoombucksTab = memo(({
           <Label>Количество бумчиков</Label>
           <Input 
             type="number"
-            placeholder="Введите количество BB"
+            placeholder="Введите количество BBS"
             value={buyAmount}
             onChange={(e) => setBuyAmount(e.target.value)}
             className="bg-background/50"
@@ -65,7 +65,7 @@ export const BuyBoombucksTab = memo(({
                 onClick={() => setBuyAmount(amount.toString())}
                 className="flex-1"
               >
-                {amount} BB
+                {amount} BBS
               </Button>
             ))}
           </div>
@@ -78,7 +78,7 @@ export const BuyBoombucksTab = memo(({
               <span className="font-bold text-accent">₽{(parseInt(buyAmount) * 100).toLocaleString()}</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Пользователь получит {buyAmount} BB после подтверждения
+              Пользователь получит {buyAmount} BBS после подтверждения
             </p>
           </div>
         )}

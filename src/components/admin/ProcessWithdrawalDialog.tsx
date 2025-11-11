@@ -49,8 +49,8 @@ export const ProcessWithdrawalDialog = memo(({
                 <span className="font-bold text-white">{selectedRequest.username}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Сумма BB:</span>
-                <span className="font-bold text-accent">{selectedRequest.amount.toLocaleString()} BB</span>
+                <span className="text-sm text-muted-foreground">Сумма BBS:</span>
+                <span className="font-bold text-accent">{selectedRequest.amount.toLocaleString()} BBS</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">К переводу:</span>

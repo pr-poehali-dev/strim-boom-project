@@ -40,7 +40,7 @@ export const AppHeader = memo(({
         <DialogTrigger asChild>
           <Badge className="bg-accent/90 text-white font-bold px-3 py-1.5 flex items-center gap-1.5 cursor-pointer hover:bg-accent/80 transition-colors">
             <Icon name="Coins" size={16} />
-            {userBoombucks} BB
+            {userBoombucks} BBS
             <Icon name="Plus" size={14} className="ml-1" />
           </Badge>
         </DialogTrigger>

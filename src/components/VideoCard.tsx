@@ -80,7 +80,7 @@ export const VideoCard = memo(({ video, liked, setLiked, handleSwipe, userBoombu
         {video.boombucks && video.boombucks > 0 && (
           <Badge className="bg-accent/90 text-white backdrop-blur-sm px-3 py-1.5 font-bold flex items-center gap-1.5">
             <Icon name="Coins" size={14} />
-            {video.boombucks} BB
+            {video.boombucks} BBS
           </Badge>
         )}
       </div>

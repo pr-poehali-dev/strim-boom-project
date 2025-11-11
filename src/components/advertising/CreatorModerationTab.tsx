@@ -118,7 +118,7 @@ export const CreatorModerationTab = memo(({
                       </div>
                       <Badge className="bg-accent/20 text-accent text-lg px-3 py-1">
                         <Icon name="Coins" size={16} className="mr-1" />
-                        {campaign.price} BB
+                        {campaign.price} BBS
                       </Badge>
                     </div>
 

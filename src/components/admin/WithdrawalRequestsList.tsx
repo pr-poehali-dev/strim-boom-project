@@ -70,7 +70,7 @@ export const WithdrawalRequestsList = memo(({
                   <p className="text-xs text-muted-foreground mb-1">Сумма</p>
                   <p className="font-bold text-white flex items-center gap-1">
                     <Icon name="Coins" size={14} className="text-accent" />
-                    {request.amount.toLocaleString()} BB
+                    {request.amount.toLocaleString()} BBS
                   </p>
                   <p className="text-xs text-muted-foreground">
                     ≈ ₽{(request.amount * 100 * 0.7).toLocaleString()}

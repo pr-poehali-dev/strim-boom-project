@@ -186,8 +186,8 @@ export const AdminPanel = memo(({ onClose }: AdminPanelProps) => {
         <Tabs defaultValue="withdrawals" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="withdrawals">Заявки на вывод</TabsTrigger>
-            <TabsTrigger value="buy">Купить BB</TabsTrigger>
-            <TabsTrigger value="sell">Продать BB</TabsTrigger>
+            <TabsTrigger value="buy">Купить BBS</TabsTrigger>
+            <TabsTrigger value="sell">Продать BBS</TabsTrigger>
           </TabsList>
 
           <TabsContent value="withdrawals" className="space-y-4">

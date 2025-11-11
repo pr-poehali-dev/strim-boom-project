@@ -87,7 +87,7 @@ export const CampaignsTab = memo(({ campaigns }: CampaignsTabProps) => {
                     </span>
                     <span className="flex items-center gap-1">
                       <Icon name="Coins" size={12} />
-                      {campaign.price} BB
+                      {campaign.price} BBS
                     </span>
                     <span className="flex items-center gap-1">
                       <Icon name="Calendar" size={12} />

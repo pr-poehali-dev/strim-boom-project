@@ -51,7 +51,7 @@ export const SellBoombucksTab = memo(({
           <Label>Количество бумчиков</Label>
           <Input 
             type="number"
-            placeholder="Введите количество BB"
+            placeholder="Введите количество BBS"
             value={sellAmount}
             onChange={(e) => setSellAmount(e.target.value)}
             className="bg-background/50"
@@ -65,7 +65,7 @@ export const SellBoombucksTab = memo(({
                 onClick={() => setSellAmount(amount.toString())}
                 className="flex-1"
               >
-                {amount} BB
+                {amount} BBS
               </Button>
             ))}
           </div>
@@ -75,7 +75,7 @@ export const SellBoombucksTab = memo(({
           <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
             <div className="flex justify-between text-sm mb-2">
               <span>Будет списано:</span>
-              <span className="font-bold text-orange-400">{sellAmount} BB</span>
+              <span className="font-bold text-orange-400">{sellAmount} BBS</span>
             </div>
             <p className="text-xs text-muted-foreground">
               Используйте для возврата средств или корректировки баланса

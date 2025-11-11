@@ -51,7 +51,7 @@ export const DonationForm = memo(({
             Донат для {streamUsername}
           </DialogTitle>
           <DialogDescription>
-            Поддержите стример бумчиками. Ваш комментарий будет озвучен!
+            Поддержите стримера Бумбаксами (BBS). Ваш комментарий будет озвучен!
           </DialogDescription>
         </DialogHeader>
 
@@ -60,12 +60,12 @@ export const DonationForm = memo(({
             <p className="text-sm text-muted-foreground mb-1">Ваш баланс:</p>
             <div className="flex items-center gap-2">
               <Icon name="Wallet" className="text-accent" />
-              <span className="font-bold text-xl text-white">{userBoombucks} BB</span>
+              <span className="font-bold text-xl text-white">{userBoombucks} BBS</span>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Сумма доната (BB)</Label>
+            <Label>Сумма доната (BBS)</Label>
             <Input 
               type="number"
               placeholder="Введите сумму"
@@ -85,7 +85,7 @@ export const DonationForm = memo(({
                   disabled={preset > userBoombucks}
                   className="flex-1"
                 >
-                  {preset} BB
+                  {preset} BBS
                 </Button>
               ))}
             </div>
@@ -110,7 +110,7 @@ export const DonationForm = memo(({
             <Alert className="bg-red-500/10 border-red-500/30">
               <Icon name="AlertCircle" className="h-4 w-4 text-red-400" />
               <AlertDescription>
-                Недостаточно бумчиков. У вас: {userBoombucks} BB
+                Недостаточно Бумбаксов. У вас: {userBoombucks} BBS
               </AlertDescription>
             </Alert>
           )}
@@ -122,7 +122,7 @@ export const DonationForm = memo(({
                 <span className="font-bold text-white">Будет озвучено:</span>
               </div>
               <p className="text-sm text-muted-foreground italic">
-                "Вы задонатили {amount} бумчиков. {message || '(без комментария)'}"
+                "Вы задонатили {amount} Бумбаксов. {message || '(без комментария)'}"
               </p>
             </div>
           )}
@@ -157,7 +157,7 @@ export const DonationForm = memo(({
             className="bg-accent hover:bg-accent/90 flex-1"
           >
             <Icon name="Gift" className="mr-2" size={16} />
-            Задонатить {amount} BB
+            Задонатить {amount} BBS
           </Button>
         </div>
       </DialogContent>

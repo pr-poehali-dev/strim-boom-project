@@ -39,7 +39,7 @@ export const WithdrawTab = memo(({
         <Alert className="bg-blue-500/10 border-blue-500/30">
           <Icon name="Info" className="h-4 w-4 text-blue-400" />
           <AlertDescription>
-            <strong>Минимальная сумма вывода: 10,000 BB</strong> (₽1,000,000 до вычета комиссии)
+            <strong>Минимальная сумма вывода: 10,000 BBS</strong> (₽1,000,000 до вычета комиссии)
           </AlertDescription>
         </Alert>
 
@@ -47,7 +47,7 @@ export const WithdrawTab = memo(({
           <Label>Сумма (Boombucks)</Label>
           <Input 
             type="number" 
-            placeholder="Минимум 10,000 BB"
+            placeholder="Минимум 10,000 BBS"
             value={withdrawAmount}
             onChange={(e) => setWithdrawAmount(e.target.value)}
             max={userBoombucks}
@@ -63,7 +63,7 @@ export const WithdrawTab = memo(({
                 onClick={() => setWithdrawAmount(amount.toString())}
                 disabled={amount > userBoombucks}
               >
-                {(amount / 1000)}k BB
+                {(amount / 1000)}k BBS
               </Button>
             ))}
           </div>
@@ -125,7 +125,7 @@ export const WithdrawTab = memo(({
           <Alert className="bg-red-500/10 border-red-500/30">
             <Icon name="AlertCircle" className="h-4 w-4 text-red-400" />
             <AlertDescription>
-              Минимальная сумма вывода: 10,000 BB. Ваша сумма: {withdrawAmount} BB.
+              Минимальная сумма вывода: 10,000 BBS. Ваша сумма: {withdrawAmount} BBS.
             </AlertDescription>
           </Alert>
         )}

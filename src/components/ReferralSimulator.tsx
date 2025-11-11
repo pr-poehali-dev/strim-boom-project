@@ -60,7 +60,7 @@ export const ReferralSimulator = memo(({ onSimulatePurchase }: ReferralSimulator
           <Alert className="bg-purple-500/10 border-purple-500/30">
             <Icon name="Info" className="h-4 w-4 text-purple-400" />
             <AlertDescription className="text-sm">
-              <strong>Demo Tool:</strong> This simulates a new user signing up via your referral link and making a purchase. You'll earn 1 BB if they buy 3+ Boombucks.
+              <strong>Demo Tool:</strong> This simulates a new user signing up via your referral link and making a purchase. You'll earn 1 BBS if they buy 3+ Boombucks.
             </AlertDescription>
           </Alert>
 

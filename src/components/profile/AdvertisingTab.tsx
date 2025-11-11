@@ -72,12 +72,12 @@ export const AdvertisingTab = memo(({
                 size="sm"
                 onClick={() => setAdPrice(amount.toString())}
               >
-                {amount} BB
+                {amount} BBS
               </Button>
             ))}
           </div>
           <p className="text-xs text-muted-foreground">
-            Current price: <span className="font-bold text-accent">500 BB</span> (~₽50,000 before fee)
+            Current price: <span className="font-bold text-accent">500 BBS</span> (~₽50,000 before fee)
           </p>
         </div>
 
@@ -110,7 +110,7 @@ export const AdvertisingTab = memo(({
               <p className="text-xs text-muted-foreground">Total Earned</p>
               <p className="text-xl font-bold text-accent flex items-center gap-1">
                 <Icon name="Coins" size={18} />
-                1,250 BB
+                1,250 BBS
               </p>
             </div>
             <div>

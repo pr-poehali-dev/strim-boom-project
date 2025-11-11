@@ -61,7 +61,7 @@ export const DonationAlert = memo(({ donation, onComplete, voice, ttsEnabled }: 
           </div>
           <div className="flex items-center gap-2">
             <Icon name="Coins" size={20} className="text-yellow-300" />
-            <span className="font-bold text-yellow-300 text-2xl">{donation.amount} BB</span>
+            <span className="font-bold text-yellow-300 text-2xl">{donation.amount} BBS</span>
           </div>
           {donation.message && (
             <p className="text-white/90 text-sm mt-2 italic">"{donation.message}"</p>

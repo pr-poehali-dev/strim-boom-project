@@ -30,7 +30,7 @@ export const CreatorCard = memo(({ creator, calculateCPM, onOrderClick }: Creato
         </div>
         <Badge className="bg-accent/20 text-accent text-xs">
           <Icon name="Coins" size={12} className="mr-1" />
-          {creator.adPrice} BB
+          {creator.adPrice} BBS
         </Badge>
       </div>
 

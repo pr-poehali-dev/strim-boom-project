@@ -76,7 +76,7 @@ export const OrderAdDialog = memo(({
             </div>
             <Badge className="bg-accent/20 text-accent text-lg px-3 py-1">
               <Icon name="Coins" size={16} className="mr-1" />
-              {selectedCreator.adPrice} BB
+              {selectedCreator.adPrice} BBS
             </Badge>
           </div>
 
@@ -134,7 +134,7 @@ export const OrderAdDialog = memo(({
             <Alert className="bg-red-500/10 border-red-500/30">
               <Icon name="AlertCircle" className="h-4 w-4 text-red-400" />
               <AlertDescription>
-                Insufficient funds. You need {selectedCreator.adPrice} BB but have {userBoombucks} BB.
+                Insufficient funds. You need {selectedCreator.adPrice} BBS but have {userBoombucks} BBS.
               </AlertDescription>
             </Alert>
           )}
@@ -144,19 +144,19 @@ export const OrderAdDialog = memo(({
               <span className="text-sm text-muted-foreground">Your Balance</span>
               <span className="font-bold flex items-center gap-1">
                 <Icon name="Wallet" size={16} />
-                {userBoombucks} BB
+                {userBoombucks} BBS
               </span>
             </div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-muted-foreground">Ad Cost</span>
-              <span className="font-bold text-orange-400">-{selectedCreator.adPrice} BB</span>
+              <span className="font-bold text-orange-400">-{selectedCreator.adPrice} BBS</span>
             </div>
             <div className="h-px bg-border my-2" />
             <div className="flex justify-between items-center">
               <span className="text-lg font-bold text-accent">After Purchase</span>
               <span className="text-lg font-bold text-accent flex items-center gap-1">
                 <Icon name="Coins" size={18} />
-                {userBoombucks - selectedCreator.adPrice} BB
+                {userBoombucks - selectedCreator.adPrice} BBS
               </span>
             </div>
           </div>
@@ -190,7 +190,7 @@ export const OrderAdDialog = memo(({
             className="bg-accent hover:bg-accent/90"
           >
             <Icon name="ShoppingCart" className="mr-2" size={16} />
-            Order for {selectedCreator.adPrice} BB
+            Order for {selectedCreator.adPrice} BBS
           </Button>
         </DialogFooter>
       </DialogContent>

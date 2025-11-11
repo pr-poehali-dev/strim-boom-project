@@ -41,10 +41,10 @@ export const BuyBoombucksDialog = memo(({
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
             <Icon name="ShoppingCart" className="text-accent" />
-            Buy Boombucks
+            Купить Бумбаксы (BBS)
           </DialogTitle>
           <DialogDescription>
-            Purchase Boombucks with your preferred currency
+            Покупайте Бумбаксы за рубли, USDT, телефон или мемкоин
           </DialogDescription>
         </DialogHeader>
         
@@ -53,7 +53,7 @@ export const BuyBoombucksDialog = memo(({
             <Label>Your Balance</Label>
             <div className="flex items-center gap-2 p-3 bg-background/50 rounded-lg">
               <Icon name="Wallet" className="text-accent" />
-              <span className="font-bold text-lg">{userBoombucks} Boombucks</span>
+              <span className="font-bold text-lg">{userBoombucks} BBS</span>
               <span className="text-muted-foreground text-sm ml-auto">
                 ≈ ₽{(userBoombucks * 100).toLocaleString()}
               </span>
@@ -70,7 +70,7 @@ export const BuyBoombucksDialog = memo(({
             <TabsContent value="RUB" className="space-y-3">
               <div className="text-sm text-muted-foreground flex items-center gap-2">
                 <Icon name="Banknote" size={16} />
-                Прямая покупка: ₽100 = 1 Boombuck
+                Прямая покупка: ₽100 = 1 BBS
               </div>
             </TabsContent>
 
@@ -93,7 +93,7 @@ export const BuyBoombucksDialog = memo(({
                 </div>
                 <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-2 text-xs text-yellow-400 flex items-start gap-2">
                   <Icon name="AlertCircle" size={14} className="mt-0.5 flex-shrink-0" />
-                  <span>После отправки USDT укажите сумму ниже и нажмите "Купить". Мы проверим транзакцию.</span>
+                  <span>После отправки USDT укажите сумму ниже и нажмите "Купить". 1 USDT = {(exchangeRates.USDT / 100).toFixed(2)} BBS</span>
                 </div>
               </div>
             </TabsContent>
@@ -126,7 +126,7 @@ export const BuyBoombucksDialog = memo(({
                 </div>
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded p-2 text-xs text-blue-400 flex items-start gap-2">
                   <Icon name="Info" size={14} className="mt-0.5 flex-shrink-0" />
-                  <span>Переведите ₽ по номеру телефона через СБП. Курс: ₽100 = 1 Boombuck</span>
+                  <span>Переведите ₽ по номеру телефона через СБП. Курс: ₽100 = 1 BBS</span>
                 </div>
               </div>
             </TabsContent>
@@ -140,18 +140,18 @@ export const BuyBoombucksDialog = memo(({
                   <div className="flex-1">
                     <h4 className="font-bold text-white mb-1">Обмен мемкоина</h4>
                     <p className="text-sm text-muted-foreground mb-2">
-                      Обменяйте ваши мемкоины на Boombucks
+                      Обменяйте ваши мемкоины на Бумбаксы
                     </p>
                     <div className="bg-background/50 p-3 rounded">
                       <p className="text-lg font-bold text-accent">
-                        Курс: {exchangeRates.MEMECOIN} мемкоинов = 1 Boombuck
+                        Курс: {exchangeRates.MEMECOIN} мемкоинов = 1 BBS
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="bg-accent/10 border border-accent/30 rounded p-2 text-xs text-accent flex items-start gap-2">
                   <Icon name="TrendingUp" size={14} className="mt-0.5 flex-shrink-0" />
-                  <span>Введите количество мемкоинов ниже для обмена на Boombucks</span>
+                  <span>Введите количество мемкоинов ниже для обмена на Бумбаксы</span>
                 </div>
               </div>
             </TabsContent>
@@ -242,7 +242,7 @@ export const BuyBoombucksDialog = memo(({
                   </span>
                   <span>
                     {selectedCurrency === 'USDT' && `₽${(parseFloat(buyAmount) * exchangeRates.USDT).toFixed(2)}`}
-                    {selectedCurrency === 'MEMECOIN' && `${exchangeRates.MEMECOIN} MC = 1 BB`}
+                    {selectedCurrency === 'MEMECOIN' && `${exchangeRates.MEMECOIN} MC = 1 BBS`}
                   </span>
                 </div>
               )}
@@ -251,7 +251,7 @@ export const BuyBoombucksDialog = memo(({
                 <span className="text-accent">Вы получите:</span>
                 <span className="text-accent flex items-center gap-1">
                   <Icon name="Coins" size={18} />
-                  {calculateBoombucks(buyAmount, selectedCurrency)} BB
+                  {calculateBoombucks(buyAmount, selectedCurrency)} BBS
                 </span>
               </div>
             </div>

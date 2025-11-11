@@ -72,7 +72,7 @@ export const TransactionHistoryTab = memo(({
                   {(transaction.type === 'buy' || transaction.type === 'donation_received') && '+'}
                   {(transaction.type === 'withdraw' || transaction.type === 'donation_sent' || transaction.type === 'ad_purchase') && '-'}
                   <Icon name="Coins" size={16} />
-                  {transaction.amount} BB
+                  {transaction.amount} BBS
                 </p>
                 <Badge 
                   variant="outline" 

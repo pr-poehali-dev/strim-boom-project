@@ -180,7 +180,7 @@ export const AdvertisingMarketplace = memo(({
       id: (Date.now() + 1).toString(),
       type: 'ad_request',
       title: 'New Ad Request',
-      message: `${brandName} wants to run a ${parseInt(adDuration)}s ad for ${price} BB`,
+      message: `${brandName} wants to run a ${parseInt(adDuration)}s ad for ${price} BBS`,
       campaignId: newCampaign.id,
       read: false,
       createdAt: new Date()
@@ -241,7 +241,7 @@ export const AdvertisingMarketplace = memo(({
         id: Date.now().toString(),
         type: 'ad_rejected',
         title: 'Ad Rejected',
-        message: `${campaign.creatorUsername} rejected your ad. Funds refunded: ${campaign.price} BB`,
+        message: `${campaign.creatorUsername} rejected your ad. Funds refunded: ${campaign.price} BBS`,
         campaignId: campaign.id,
         read: false,
         createdAt: new Date()
