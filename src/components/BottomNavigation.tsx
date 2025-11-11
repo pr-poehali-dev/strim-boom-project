@@ -1,3 +1,4 @@
+import { memo, useMemo, useCallback } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Icon from '@/components/ui/icon';
@@ -13,7 +14,7 @@ interface BottomNavigationProps {
   filteredVideos: Video[];
 }
 
-export const BottomNavigation = ({ 
+export const BottomNavigation = memo(({ 
   activeTab, 
   setActiveTab, 
   showContentFilter, 
@@ -21,11 +22,21 @@ export const BottomNavigation = ({
   mockVideos,
   filteredVideos
 }: BottomNavigationProps) => {
+  const blockedCount = useMemo(() => mockVideos.filter(v => v.isBlocked).length, [mockVideos]);
+  const voiceSwappedCount = useMemo(() => mockVideos.filter(v => v.voiceSwapped).length, [mockVideos]);
+
+  const handleToggleFilter = useCallback(() => {
+    setShowContentFilter(!showContentFilter);
+  }, [showContentFilter, setShowContentFilter]);
+
+  const handleTabClick = useCallback((tab: 'home' | 'trends' | 'streams' | 'upload' | 'profile') => {
+    setActiveTab(tab);
+  }, [setActiveTab]);
   return (
     <nav className="absolute bottom-0 left-0 right-0 z-20 bg-card/80 backdrop-blur-lg border-t border-primary/20">
       <div className="flex items-center justify-around py-3">
         <button 
-          onClick={() => setActiveTab('home')}
+          onClick={() => handleTabClick('home')}
           className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'home' ? 'text-primary' : 'text-muted-foreground'}`}
         >
           <Icon name="Home" size={24} />
@@ -33,7 +44,7 @@ export const BottomNavigation = ({
         </button>
 
         <button 
-          onClick={() => setActiveTab('trends')}
+          onClick={() => handleTabClick('trends')}
           className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'trends' ? 'text-primary' : 'text-muted-foreground'}`}
         >
           <Icon name="TrendingUp" size={24} />
@@ -41,7 +52,7 @@ export const BottomNavigation = ({
         </button>
 
         <button 
-          onClick={() => setActiveTab('streams')}
+          onClick={() => handleTabClick('streams')}
           className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'streams' ? 'text-primary' : 'text-muted-foreground'}`}
         >
           <Icon name="Radio" size={24} />
@@ -49,7 +60,7 @@ export const BottomNavigation = ({
         </button>
 
         <button 
-          onClick={() => setActiveTab('upload')}
+          onClick={() => handleTabClick('upload')}
           className="relative -mt-4"
         >
           <div className="p-4 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent shadow-lg shadow-primary/50">
@@ -89,7 +100,7 @@ export const BottomNavigation = ({
                 <Button
                   variant={showContentFilter ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setShowContentFilter(!showContentFilter)}
+                  onClick={handleToggleFilter}
                 >
                   {showContentFilter ? 'ON' : 'OFF'}
                 </Button>
@@ -111,11 +122,11 @@ export const BottomNavigation = ({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Blocked Content:</span>
-                    <span className="font-bold text-red-400">{mockVideos.filter(v => v.isBlocked).length}</span>
+                    <span className="font-bold text-red-400">{blockedCount}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Voice-Swapped:</span>
-                    <span className="font-bold text-purple-400">{mockVideos.filter(v => v.voiceSwapped).length}</span>
+                    <span className="font-bold text-purple-400">{voiceSwappedCount}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Available:</span>
@@ -128,7 +139,7 @@ export const BottomNavigation = ({
         </Dialog>
 
         <button 
-          onClick={() => setActiveTab('profile')}
+          onClick={() => handleTabClick('profile')}
           className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'profile' ? 'text-primary' : 'text-muted-foreground'}`}
         >
           <Icon name="User" size={24} />
@@ -137,4 +148,6 @@ export const BottomNavigation = ({
       </div>
     </nav>
   );
-};
+});
+
+BottomNavigation.displayName = 'BottomNavigation';

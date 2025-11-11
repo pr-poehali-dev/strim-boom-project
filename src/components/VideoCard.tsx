@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,24 +19,38 @@ interface VideoCardProps {
   setUserBoombucks: (amount: number) => void;
 }
 
-export const VideoCard = ({ video, liked, setLiked, handleSwipe, userBoombucks, setUserBoombucks }: VideoCardProps) => {
+export const VideoCard = memo(({ video, liked, setLiked, handleSwipe, userBoombucks, setUserBoombucks }: VideoCardProps) => {
   const [donateOpen, setDonateOpen] = useState(false);
   const [donateAmount, setDonateAmount] = useState('');
 
-  const handleDonate = () => {
+  const handleDonate = useCallback(() => {
     const amount = parseInt(donateAmount);
     if (amount > 0 && amount <= userBoombucks) {
       setUserBoombucks(userBoombucks - amount);
       setDonateOpen(false);
       setDonateAmount('');
     }
-  };
+  }, [donateAmount, userBoombucks, setUserBoombucks]);
 
-  const convertToRub = (boombucks: number) => {
+  const convertToRub = useCallback((boombucks: number) => {
     const rubles = boombucks * 100;
     const afterFee = rubles * 0.7;
     return afterFee.toFixed(2);
-  };
+  }, []);
+
+  const likesCount = useMemo(() => video.likes + (liked ? 1 : 0), [video.likes, liked]);
+
+  const handleLikeClick = useCallback(() => {
+    setLiked(!liked);
+  }, [liked, setLiked]);
+
+  const handleSwipeUp = useCallback(() => {
+    handleSwipe('up');
+  }, [handleSwipe]);
+
+  const handleSwipeDown = useCallback(() => {
+    handleSwipe('down');
+  }, [handleSwipe]);
 
   return (
     <Card className="relative w-full max-w-md h-[calc(100vh-180px)] bg-card/50 backdrop-blur-lg border-primary/30 overflow-hidden rounded-3xl">
@@ -144,13 +158,13 @@ export const VideoCard = ({ video, liked, setLiked, handleSwipe, userBoombucks, 
 
           <div className="flex flex-col gap-4 items-center">
             <button 
-              onClick={() => setLiked(!liked)}
+              onClick={handleLikeClick}
               className="flex flex-col items-center gap-1 transition-transform hover:scale-110"
             >
               <div className={`p-3 rounded-full bg-card/50 backdrop-blur-sm ${liked ? 'text-accent' : 'text-white'}`}>
                 <Icon name="Heart" size={28} className={liked ? 'fill-current' : ''} />
               </div>
-              <span className="text-white text-sm font-semibold">{(video.likes + (liked ? 1 : 0)).toLocaleString()}</span>
+              <span className="text-white text-sm font-semibold">{likesCount.toLocaleString()}</span>
             </button>
 
             <button className="flex flex-col items-center gap-1 transition-transform hover:scale-110">
@@ -305,15 +319,17 @@ export const VideoCard = ({ video, liked, setLiked, handleSwipe, userBoombucks, 
       </div>
 
       <button 
-        onClick={() => handleSwipe('down')}
+        onClick={handleSwipeDown}
         className="absolute top-0 left-0 right-0 h-1/3 z-10"
         aria-label="Previous video"
       />
       <button 
-        onClick={() => handleSwipe('up')}
+        onClick={handleSwipeUp}
         className="absolute bottom-24 left-0 right-0 h-1/3 z-10"
         aria-label="Next video"
       />
     </Card>
   );
-};
+});
+
+VideoCard.displayName = 'VideoCard';

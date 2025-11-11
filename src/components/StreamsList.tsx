@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +9,7 @@ interface StreamsListProps {
   streams: Stream[];
 }
 
-export const StreamsList = ({ streams }: StreamsListProps) => {
+export const StreamsList = memo(({ streams }: StreamsListProps) => {
   return (
     <div className="h-full w-full pt-20 pb-24 px-4 overflow-y-auto">
       <div className="max-w-4xl mx-auto">
@@ -69,4 +70,6 @@ export const StreamsList = ({ streams }: StreamsListProps) => {
       </div>
     </div>
   );
-};
+});
+
+StreamsList.displayName = 'StreamsList';

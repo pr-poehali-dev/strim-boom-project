@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,13 +14,17 @@ const Index = () => {
   const [userBoombucks, setUserBoombucks] = useState(1250);
   const [showContentFilter, setShowContentFilter] = useState(true);
 
-  const filteredVideos = showContentFilter 
-    ? mockVideos.filter(v => !v.isBlocked) 
-    : mockVideos;
+  const filteredVideos = useMemo(() => {
+    return showContentFilter 
+      ? mockVideos.filter(v => !v.isBlocked) 
+      : mockVideos;
+  }, [showContentFilter]);
 
-  const video = filteredVideos[currentVideo] || mockVideos[0];
+  const video = useMemo(() => {
+    return filteredVideos[currentVideo] || mockVideos[0];
+  }, [filteredVideos, currentVideo]);
 
-  const handleSwipe = (direction: 'up' | 'down') => {
+  const handleSwipe = useCallback((direction: 'up' | 'down') => {
     if (direction === 'up' && currentVideo < filteredVideos.length - 1) {
       setCurrentVideo(currentVideo + 1);
       setLiked(false);
@@ -28,7 +32,7 @@ const Index = () => {
       setCurrentVideo(currentVideo - 1);
       setLiked(false);
     }
-  };
+  }, [currentVideo, filteredVideos.length]);
 
   return (
     <div className="h-screen w-screen bg-background overflow-hidden relative">
