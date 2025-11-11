@@ -203,7 +203,11 @@ export const useAppState = (currentUserId: number) => {
             KZT: '₸'
           };
           
-          toast.success(`Покупка успешна!`, {
+          const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA0PWqzn7q5aGAg+ldb0xHMpBSh+zPLaizsIGGS56+mgUBELTKXh8bllHAU2jtHz0YAyBx1rvu7mnkwOD1ms5/CtWhgIPpXW88NxKAUof8zx2Io8BxhmuevsokAQC06k4PG8aR4EO5HS89SCNAYYZ7zv56JPDg5Yreb0rl0bCECV1/PGdSsFKoHO8tmLPQcYZbvs7aVTEgxOpN/yv2weBTuR0vTWhDQGGmW76+mfUBELT6Pe88JvJAU5kdPz1oU1BhpmvO3qn1ARDVGD4O/Ediwp');
+          audio.volume = 0.3;
+          audio.play().catch(() => {});
+          
+          toast.success(`Покупка успешна! 🎉`, {
             description: `Вы получили ${boombucksToAdd} BBS через ${currencyLabels[selectedCurrency]}. Новый баланс: ${userBoombucks + boombucksToAdd} BBS`,
             duration: 4000,
           });
