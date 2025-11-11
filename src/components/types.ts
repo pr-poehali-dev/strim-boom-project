@@ -71,6 +71,86 @@ export const mockStreams: Stream[] = [
     viewers: 6782,
     category: 'Творчество',
     isLive: true
+  },
+  {
+    id: 5,
+    username: '@code_master',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=code',
+    title: 'Пишу AI-бота для крипты 💻',
+    thumbnail: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5',
+    viewers: 9234,
+    category: 'Разработка',
+    isLive: true
+  },
+  {
+    id: 6,
+    username: '@fitness_ai',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=fitness',
+    title: 'Тренировка с AI-тренером 💪',
+    thumbnail: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48',
+    viewers: 5432,
+    category: 'Спорт',
+    isLive: true
+  },
+  {
+    id: 7,
+    username: '@cook_bot',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=cook',
+    title: 'Готовлю по рецептам от AI 🍳',
+    thumbnail: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d',
+    viewers: 7821,
+    category: 'Кулинария',
+    isLive: true
+  },
+  {
+    id: 8,
+    username: '@space_explorer',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=space',
+    title: 'Исследую космос в симуляторе 🚀',
+    thumbnail: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06',
+    viewers: 11234,
+    category: 'Наука',
+    isLive: true
+  },
+  {
+    id: 9,
+    username: '@fashion_ai',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=fashion',
+    title: 'AI создаёт модную коллекцию 👗',
+    thumbnail: 'https://images.unsplash.com/photo-1509631179647-0177331693ae',
+    viewers: 6543,
+    category: 'Мода',
+    isLive: true
+  },
+  {
+    id: 10,
+    username: '@edu_stream',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=edu',
+    title: 'Учу математику с нейросетью 📚',
+    thumbnail: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b',
+    viewers: 4321,
+    category: 'Образование',
+    isLive: true
+  },
+  {
+    id: 11,
+    username: '@photo_master',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=photo',
+    title: 'Обработка фото через AI 📷',
+    thumbnail: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e',
+    viewers: 8765,
+    category: 'Фотография',
+    isLive: true
+  },
+  {
+    id: 12,
+    username: '@auto_tuner',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=auto',
+    title: 'Тюнинг авто в виртуале 🚗',
+    thumbnail: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7',
+    viewers: 10234,
+    category: 'Авто',
+    isLive: true
   }
 ];
 
