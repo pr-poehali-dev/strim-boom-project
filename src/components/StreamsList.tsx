@@ -1,10 +1,7 @@
 import { memo, useMemo, useRef, useEffect, useState, useCallback } from 'react';
-import ReactWindow from 'react-window';
-import InfiniteLoader from 'react-window-infinite-loader';
+import { FixedSizeList } from 'react-window';
 import { Stream } from './types';
 import { StreamCard } from './StreamCard';
-
-const { FixedSizeList } = ReactWindow;
 
 interface StreamsListProps {
   streams: Stream[];
@@ -206,25 +203,26 @@ export const StreamsList = memo(({ streams: initialStreams, onStreamClick }: Str
         </h2>
         
         {dimensions.height > 0 && (
-          <InfiniteLoader
-            isItemLoaded={isItemLoaded}
+          <FixedSizeList
+            height={dimensions.height - 80}
             itemCount={rowCount}
-            loadMoreItems={loadNextPage}
+            itemSize={380}
+            width="100%"
+            overscanCount={2}
+            onScroll={({ scrollOffset }) => {
+              const container = containerRef.current;
+              if (!container) return;
+              
+              const scrollHeight = container.scrollHeight;
+              const clientHeight = dimensions.height - 80;
+              
+              if (scrollHeight - scrollOffset <= clientHeight * 1.5 && !isNextPageLoading && hasNextPage) {
+                loadNextPage();
+              }
+            }}
           >
-            {({ onItemsRendered, ref }) => (
-              <FixedSizeList
-                height={dimensions.height - 80}
-                itemCount={rowCount}
-                itemSize={380}
-                width="100%"
-                overscanCount={2}
-                onItemsRendered={onItemsRendered}
-                ref={ref}
-              >
-                {Row}
-              </FixedSizeList>
-            )}
-          </InfiniteLoader>
+            {Row}
+          </FixedSizeList>
         )}
       </div>
     </div>
