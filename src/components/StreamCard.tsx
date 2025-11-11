@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Stream } from './types';
+import { LiveStreamViewer } from './stream/LiveStreamViewer';
 
 interface StreamCardProps {
   stream: Stream;

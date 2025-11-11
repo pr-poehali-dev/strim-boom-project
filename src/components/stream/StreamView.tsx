@@ -7,6 +7,7 @@ import { Stream, DonationMessage } from '@/components/types';
 import { DonationAlert } from './DonationAlert';
 import { DonationForm } from './DonationForm';
 import { StreamSettings } from './StreamSettings';
+import { LiveStreamViewer } from './LiveStreamViewer';
 
 interface StreamViewProps {
   stream: Stream;
@@ -102,12 +103,21 @@ export const StreamView = memo(({
           </div>
 
           <div className="flex-1 flex items-center justify-center p-4">
-            <div className="w-full max-w-4xl aspect-video bg-background/30 backdrop-blur-sm rounded-lg border border-primary/30 flex items-center justify-center">
-              <div className="text-center">
-                <Icon name="Video" size={64} className="mx-auto mb-4 text-muted-foreground" />
-                <p className="text-white font-bold text-xl mb-2">{stream.title}</p>
-                <p className="text-muted-foreground">Видео стрим (демо)</p>
-              </div>
+            <div className="w-full max-w-4xl">
+              {stream.isLive && stream.streamKey ? (
+                <LiveStreamViewer 
+                  streamId={stream.id}
+                  streamKey={stream.streamKey}
+                />
+              ) : (
+                <div className="aspect-video bg-background/30 backdrop-blur-sm rounded-lg border border-primary/30 flex items-center justify-center">
+                  <div className="text-center">
+                    <Icon name="Video" size={64} className="mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-white font-bold text-xl mb-2">{stream.title}</p>
+                    <p className="text-muted-foreground">Стрим завершён</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

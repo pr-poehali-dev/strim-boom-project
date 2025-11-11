@@ -12,6 +12,7 @@ import { TransactionHistoryTab } from './profile/TransactionHistoryTab';
 import { ReferralTab } from './profile/ReferralTab';
 import { ReferralSimulator } from './ReferralSimulator';
 import { PaymentInstructions } from './PaymentInstructions';
+import { LiveStreamBroadcaster } from './stream/LiveStreamBroadcaster';
 
 interface ProfilePageProps {
   userBoombucks: number;
@@ -115,6 +116,7 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
                   Active
                 </Badge>
                 <div className="flex gap-2">
+                  <LiveStreamBroadcaster userId={userId} username="username" />
                   <ReferralSimulator onSimulatePurchase={onSimulateReferralPurchase} />
                   <PaymentInstructions />
                 </div>

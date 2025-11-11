@@ -88,6 +88,7 @@ export interface Stream {
   isLive: boolean;
   ttsEnabled?: boolean;
   ttsVoice?: 'male1' | 'male2' | 'female';
+  streamKey?: string;
 }
 
 export interface DonationMessage {
