@@ -10,12 +10,13 @@ import { VideoCard } from '@/components/VideoCard';
 import { StreamsList } from '@/components/StreamsList';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { ProfilePage } from '@/components/ProfilePage';
+import { AdvertisingMarketplace } from '@/components/AdvertisingMarketplace';
 import { mockVideos, mockStreams, Transaction } from '@/components/types';
 
 const Index = () => {
   const [currentVideo, setCurrentVideo] = useState(0);
   const [liked, setLiked] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'trends' | 'streams' | 'upload' | 'profile'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'trends' | 'streams' | 'upload' | 'profile' | 'ads'>('home');
   const [userBoombucks, setUserBoombucks] = useState(1250);
   const [showContentFilter, setShowContentFilter] = useState(true);
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
@@ -300,6 +301,13 @@ const Index = () => {
         <StreamsList streams={mockStreams} />
       ) : activeTab === 'profile' ? (
         <ProfilePage 
+          userBoombucks={userBoombucks}
+          setUserBoombucks={setUserBoombucks}
+          transactions={transactions}
+          setTransactions={setTransactions}
+        />
+      ) : activeTab === 'ads' ? (
+        <AdvertisingMarketplace 
           userBoombucks={userBoombucks}
           setUserBoombucks={setUserBoombucks}
           transactions={transactions}

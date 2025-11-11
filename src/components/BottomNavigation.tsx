@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Video } from './types';
 
 interface BottomNavigationProps {
-  activeTab: 'home' | 'trends' | 'streams' | 'upload' | 'profile';
-  setActiveTab: (tab: 'home' | 'trends' | 'streams' | 'upload' | 'profile') => void;
+  activeTab: 'home' | 'trends' | 'streams' | 'upload' | 'profile' | 'ads';
+  setActiveTab: (tab: 'home' | 'trends' | 'streams' | 'upload' | 'profile' | 'ads') => void;
   showContentFilter: boolean;
   setShowContentFilter: (show: boolean) => void;
   mockVideos: Video[];
@@ -29,7 +29,7 @@ export const BottomNavigation = memo(({
     setShowContentFilter(!showContentFilter);
   }, [showContentFilter, setShowContentFilter]);
 
-  const handleTabClick = useCallback((tab: 'home' | 'trends' | 'streams' | 'upload' | 'profile') => {
+  const handleTabClick = useCallback((tab: 'home' | 'trends' | 'streams' | 'upload' | 'profile' | 'ads') => {
     setActiveTab(tab);
   }, [setActiveTab]);
   return (
@@ -57,6 +57,14 @@ export const BottomNavigation = memo(({
         >
           <Icon name="Radio" size={24} />
           <span className="text-xs">Стримы</span>
+        </button>
+
+        <button 
+          onClick={() => handleTabClick('ads')}
+          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'ads' ? 'text-primary' : 'text-muted-foreground'}`}
+        >
+          <Icon name="Megaphone" size={24} />
+          <span className="text-xs">Реклама</span>
         </button>
 
         <button 

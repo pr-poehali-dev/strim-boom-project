@@ -32,6 +32,29 @@ export interface Transaction {
   status: 'completed' | 'pending' | 'failed';
 }
 
+export interface Creator {
+  id: number;
+  username: string;
+  avatar: string;
+  followers: number;
+  avgViews: number;
+  category: string;
+  adPrice: number;
+  acceptsAds: boolean;
+}
+
+export interface AdCampaign {
+  id: string;
+  brandName: string;
+  creatorId: number;
+  creatorUsername: string;
+  adContent: string;
+  duration: number;
+  price: number;
+  status: 'pending' | 'approved' | 'rejected' | 'live';
+  createdAt: Date;
+}
+
 export interface Stream {
   id: number;
   username: string;
