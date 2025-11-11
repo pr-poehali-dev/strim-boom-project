@@ -11,7 +11,8 @@ import { StreamsList } from '@/components/StreamsList';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { ProfilePage } from '@/components/ProfilePage';
 import { AdvertisingMarketplace } from '@/components/AdvertisingMarketplace';
-import { mockVideos, mockStreams, Transaction } from '@/components/types';
+import { NotificationCenter } from '@/components/NotificationCenter';
+import { mockVideos, mockStreams, Transaction, Notification } from '@/components/types';
 
 const Index = () => {
   const [currentVideo, setCurrentVideo] = useState(0);
@@ -41,6 +42,38 @@ const Index = () => {
       status: 'completed'
     }
   ]);
+
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      type: 'ad_request',
+      title: 'New Ad Request',
+      message: 'TechCorp wants to run a 30s ad on your content for 500 BB',
+      campaignId: '1',
+      read: false,
+      createdAt: new Date(Date.now() - 3600000)
+    },
+    {
+      id: '2',
+      type: 'payment_received',
+      title: 'Payment Received',
+      message: 'You received 250 BB from GameStudio ad campaign',
+      read: false,
+      createdAt: new Date(Date.now() - 7200000)
+    }
+  ]);
+
+  const handleMarkAsRead = useCallback((id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  }, []);
+
+  const handleMarkAllAsRead = useCallback(() => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  }, []);
+
+  const handleClearAllNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
 
   const filteredVideos = useMemo(() => {
     return showContentFilter 
@@ -108,6 +141,12 @@ const Index = () => {
           className="h-12 w-auto animate-pulse-glow"
         />
         <div className="flex items-center gap-2">
+          <NotificationCenter 
+            notifications={notifications}
+            onMarkAsRead={handleMarkAsRead}
+            onMarkAllAsRead={handleMarkAllAsRead}
+            onClearAll={handleClearAllNotifications}
+          />
           <Dialog open={buyDialogOpen} onOpenChange={setBuyDialogOpen}>
             <DialogTrigger asChild>
               <Badge className="bg-accent/90 text-white font-bold px-3 py-1.5 flex items-center gap-1.5 cursor-pointer hover:bg-accent/80 transition-colors">
@@ -312,6 +351,9 @@ const Index = () => {
           setUserBoombucks={setUserBoombucks}
           transactions={transactions}
           setTransactions={setTransactions}
+          notifications={notifications}
+          setNotifications={setNotifications}
+          currentUserId={1}
         />
       ) : (
         <div className="h-full w-full flex items-center justify-center pt-20 pb-24">

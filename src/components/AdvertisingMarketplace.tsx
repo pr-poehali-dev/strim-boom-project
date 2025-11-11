@@ -3,16 +3,20 @@ import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Creator, AdCampaign, Transaction } from './types';
+import { Creator, AdCampaign, Transaction, Notification } from './types';
 import { CreatorsTab } from './advertising/CreatorsTab';
 import { CampaignsTab } from './advertising/CampaignsTab';
 import { OrderAdDialog } from './advertising/OrderAdDialog';
+import { CreatorModerationTab } from './advertising/CreatorModerationTab';
 
 interface AdvertisingMarketplaceProps {
   userBoombucks: number;
   setUserBoombucks: (amount: number) => void;
   transactions: Transaction[];
   setTransactions: (transactions: Transaction[]) => void;
+  notifications: Notification[];
+  setNotifications: (notifications: Notification[]) => void;
+  currentUserId: number;
 }
 
 const mockCreators: Creator[] = [
@@ -82,7 +86,10 @@ export const AdvertisingMarketplace = memo(({
   userBoombucks, 
   setUserBoombucks, 
   transactions, 
-  setTransactions 
+  setTransactions,
+  notifications,
+  setNotifications,
+  currentUserId
 }: AdvertisingMarketplaceProps) => {
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [adDialogOpen, setAdDialogOpen] = useState(false);
@@ -169,16 +176,91 @@ export const AdvertisingMarketplace = memo(({
     };
     setTransactions([newTransaction, ...transactions]);
 
+    const newNotification: Notification = {
+      id: (Date.now() + 1).toString(),
+      type: 'ad_request',
+      title: 'New Ad Request',
+      message: `${brandName} wants to run a ${parseInt(adDuration)}s ad for ${price} BB`,
+      campaignId: newCampaign.id,
+      read: false,
+      createdAt: new Date()
+    };
+    setNotifications([newNotification, ...notifications]);
+
     setAdDialogOpen(false);
     setSelectedCreator(null);
     setBrandName('');
     setAdContent('');
     setAdDuration('15');
-  }, [selectedCreator, brandName, adContent, adDuration, userBoombucks, setUserBoombucks, campaigns, transactions, setTransactions]);
+  }, [selectedCreator, brandName, adContent, adDuration, userBoombucks, setUserBoombucks, campaigns, transactions, setTransactions, notifications, setNotifications]);
 
   const calculateCPM = useCallback((adPrice: number, avgViews: number) => {
     return ((adPrice * 100) / (avgViews / 1000)).toFixed(2);
   }, []);
+
+  const handleApproveCampaign = useCallback((campaignId: string) => {
+    setCampaigns(prev => prev.map(c => 
+      c.id === campaignId ? { ...c, status: 'approved' as const } : c
+    ));
+
+    const campaign = campaigns.find(c => c.id === campaignId);
+    if (campaign) {
+      const newNotification: Notification = {
+        id: Date.now().toString(),
+        type: 'ad_approved',
+        title: 'Ad Approved!',
+        message: `Your ad with ${campaign.creatorUsername} has been approved and will go live soon`,
+        campaignId: campaign.id,
+        read: false,
+        createdAt: new Date()
+      };
+      setNotifications([newNotification, ...notifications]);
+
+      setUserBoombucks(userBoombucks + campaign.price);
+      
+      const earnTransaction: Transaction = {
+        id: Date.now().toString(),
+        type: 'payment_received' as const,
+        amount: campaign.price,
+        description: `Earned from ${campaign.brandName} ad campaign`,
+        date: new Date(),
+        status: 'completed'
+      };
+      setTransactions([earnTransaction, ...transactions]);
+    }
+  }, [campaigns, notifications, setNotifications, userBoombucks, setUserBoombucks, transactions, setTransactions]);
+
+  const handleRejectCampaign = useCallback((campaignId: string, reason: string) => {
+    setCampaigns(prev => prev.map(c => 
+      c.id === campaignId ? { ...c, status: 'rejected' as const, rejectionReason: reason } : c
+    ));
+
+    const campaign = campaigns.find(c => c.id === campaignId);
+    if (campaign) {
+      const newNotification: Notification = {
+        id: Date.now().toString(),
+        type: 'ad_rejected',
+        title: 'Ad Rejected',
+        message: `${campaign.creatorUsername} rejected your ad. Funds refunded: ${campaign.price} BB`,
+        campaignId: campaign.id,
+        read: false,
+        createdAt: new Date()
+      };
+      setNotifications([newNotification, ...notifications]);
+
+      setUserBoombucks(userBoombucks + campaign.price);
+      
+      const refundTransaction: Transaction = {
+        id: Date.now().toString(),
+        type: 'buy' as const,
+        amount: campaign.price,
+        description: `Refund from rejected ad with ${campaign.creatorUsername}`,
+        date: new Date(),
+        status: 'completed'
+      };
+      setTransactions([refundTransaction, ...transactions]);
+    }
+  }, [campaigns, notifications, setNotifications, userBoombucks, setUserBoombucks, transactions, setTransactions]);
 
   return (
     <div className="h-full w-full pt-20 pb-24 px-4 overflow-y-auto">
@@ -205,9 +287,10 @@ export const AdvertisingMarketplace = memo(({
         </Alert>
 
         <Tabs defaultValue="creators" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="creators">Find Creators</TabsTrigger>
             <TabsTrigger value="campaigns">My Campaigns</TabsTrigger>
+            <TabsTrigger value="moderation">Moderation</TabsTrigger>
           </TabsList>
 
           <TabsContent value="creators">
@@ -225,6 +308,15 @@ export const AdvertisingMarketplace = memo(({
 
           <TabsContent value="campaigns">
             <CampaignsTab campaigns={campaigns} />
+          </TabsContent>
+
+          <TabsContent value="moderation">
+            <CreatorModerationTab
+              campaigns={campaigns}
+              onApprove={handleApproveCampaign}
+              onReject={handleRejectCampaign}
+              currentUserId={currentUserId}
+            />
           </TabsContent>
         </Tabs>
 

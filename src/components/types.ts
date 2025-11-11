@@ -53,6 +53,17 @@ export interface AdCampaign {
   price: number;
   status: 'pending' | 'approved' | 'rejected' | 'live';
   createdAt: Date;
+  rejectionReason?: string;
+}
+
+export interface Notification {
+  id: string;
+  type: 'ad_request' | 'ad_approved' | 'ad_rejected' | 'ad_live' | 'payment_received';
+  title: string;
+  message: string;
+  campaignId?: string;
+  read: boolean;
+  createdAt: Date;
 }
 
 export interface Stream {
