@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { mockVideos, Transaction, Notification, Referral } from '@/components/types';
 import funcUrls from '../../backend/func2url.json';
+import { toast } from 'sonner';
 
 export const useAppState = (currentUserId: number) => {
   const [currentVideo, setCurrentVideo] = useState(0);
@@ -191,6 +192,25 @@ export const useAppState = (currentUserId: number) => {
           
           setBuyDialogOpen(false);
           setBuyAmount('');
+          
+          const currencyLabels = {
+            RUB: '₽',
+            USDT: 'USDT',
+            PHONE: 'СБП',
+            MEMECOIN: 'мемкоинов',
+            USD: '$',
+            EUR: '€',
+            KZT: '₸'
+          };
+          
+          toast.success(`Покупка успешна!`, {
+            description: `Вы получили ${boombucksToAdd} BBS через ${currencyLabels[selectedCurrency]}. Новый баланс: ${userBoombucks + boombucksToAdd} BBS`,
+            duration: 4000,
+          });
+        } else {
+          toast.error('Ошибка покупки', {
+            description: 'Не удалось завершить покупку. Попробуйте снова.',
+          });
         }
       } catch (error) {
         console.error('Failed to buy boombucks:', error);
