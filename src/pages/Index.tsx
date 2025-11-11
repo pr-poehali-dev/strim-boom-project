@@ -22,8 +22,11 @@ const Index = () => {
   const [showContentFilter, setShowContentFilter] = useState(true);
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
   const [buyAmount, setBuyAmount] = useState('');
-  const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'EUR' | 'KZT' | 'RUB'>('RUB');
+  const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'EUR' | 'KZT' | 'RUB' | 'USDT' | 'PHONE' | 'MEMECOIN'>('RUB');
   const currentUserId = 1;
+
+  const cryptoWallet = 'UQCuFtQ2uMdPVRdhgEO_sOHhHwXZxXEG0anj-U0BRElk0zOk';
+  const phoneNumber = '+79503994868';
   const [transactions, setTransactions] = useState<Transaction[]>([
     {
       id: '1',
@@ -204,12 +207,20 @@ const Index = () => {
     USD: 95,
     EUR: 105,
     KZT: 0.20,
-    RUB: 1
+    RUB: 1,
+    USDT: 95,
+    PHONE: 1,
+    MEMECOIN: 100
   }), []);
 
-  const calculateBoombucks = useCallback((amount: string, currency: 'USD' | 'EUR' | 'KZT' | 'RUB') => {
+  const calculateBoombucks = useCallback((amount: string, currency: 'USD' | 'EUR' | 'KZT' | 'RUB' | 'USDT' | 'PHONE' | 'MEMECOIN') => {
     const value = parseFloat(amount);
     if (isNaN(value) || value <= 0) return 0;
+    
+    if (currency === 'MEMECOIN') {
+      return Math.floor(value);
+    }
+    
     const rubAmount = value * exchangeRates[currency];
     return Math.floor(rubAmount / 100);
   }, [exchangeRates]);
@@ -283,49 +294,123 @@ const Index = () => {
                   </div>
                 </div>
 
-                <Tabs value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as 'USD' | 'EUR' | 'KZT' | 'RUB')} className="w-full">
+                <Tabs value={selectedCurrency} onValueChange={(v) => setSelectedCurrency(v as any)} className="w-full">
                   <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="RUB">RUB</TabsTrigger>
-                    <TabsTrigger value="USD">USD</TabsTrigger>
-                    <TabsTrigger value="EUR">EUR</TabsTrigger>
-                    <TabsTrigger value="KZT">KZT</TabsTrigger>
+                    <TabsTrigger value="RUB">Рубли</TabsTrigger>
+                    <TabsTrigger value="USDT">USDT</TabsTrigger>
+                    <TabsTrigger value="PHONE">Телефон</TabsTrigger>
+                    <TabsTrigger value="MEMECOIN">Мемкоин</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="RUB" className="space-y-2">
+                  <TabsContent value="RUB" className="space-y-3">
                     <div className="text-sm text-muted-foreground flex items-center gap-2">
                       <Icon name="Banknote" size={16} />
-                      Direct purchase: ₽100 = 1 Boombuck
+                      Прямая покупка: ₽100 = 1 Boombuck
                     </div>
                   </TabsContent>
-                  <TabsContent value="USD" className="space-y-2">
-                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Icon name="DollarSign" size={16} />
-                      Exchange rate: $1 = ₽{exchangeRates.USD}
+
+                  <TabsContent value="USDT" className="space-y-3">
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-blue-500/20 p-2 rounded-lg">
+                          <Icon name="Wallet" size={20} className="text-blue-400" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-white mb-1">USDT (TON Network)</h4>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            Курс: 1 USDT = ₽{exchangeRates.USDT}
+                          </p>
+                          <div className="bg-background/50 p-2 rounded">
+                            <p className="text-xs text-muted-foreground mb-1">Кошелёк для оплаты:</p>
+                            <p className="font-mono text-xs text-white break-all">{cryptoWallet}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-2 text-xs text-yellow-400 flex items-start gap-2">
+                        <Icon name="AlertCircle" size={14} className="mt-0.5 flex-shrink-0" />
+                        <span>После отправки USDT укажите сумму ниже и нажмите "Купить". Мы проверим транзакцию.</span>
+                      </div>
                     </div>
                   </TabsContent>
-                  <TabsContent value="EUR" className="space-y-2">
-                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Icon name="Euro" size={16} />
-                      Exchange rate: €1 = ₽{exchangeRates.EUR}
+
+                  <TabsContent value="PHONE" className="space-y-3">
+                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-green-500/20 p-2 rounded-lg">
+                          <Icon name="Smartphone" size={20} className="text-green-400" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-white mb-2">Перевод по номеру телефона</h4>
+                          <div className="space-y-2">
+                            <div className="bg-background/50 p-3 rounded">
+                              <p className="text-xs text-muted-foreground mb-1">Номер телефона:</p>
+                              <p className="font-mono text-lg font-bold text-white">{phoneNumber}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <div className="flex-1 bg-background/50 p-2 rounded text-center">
+                                <Icon name="Building2" size={16} className="mx-auto mb-1 text-blue-400" />
+                                <p className="text-xs font-bold text-white">Сбербанк</p>
+                              </div>
+                              <div className="flex-1 bg-background/50 p-2 rounded text-center">
+                                <Icon name="Zap" size={16} className="mx-auto mb-1 text-purple-400" />
+                                <p className="text-xs font-bold text-white">Озон Банк</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-blue-500/10 border border-blue-500/30 rounded p-2 text-xs text-blue-400 flex items-start gap-2">
+                        <Icon name="Info" size={14} className="mt-0.5 flex-shrink-0" />
+                        <span>Переведите ₽ по номеру телефона через СБП. Курс: ₽100 = 1 Boombuck</span>
+                      </div>
                     </div>
                   </TabsContent>
-                  <TabsContent value="KZT" className="space-y-2">
-                    <div className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Icon name="Banknote" size={16} />
-                      Exchange rate: ₸1 = ₽{exchangeRates.KZT}
+
+                  <TabsContent value="MEMECOIN" className="space-y-3">
+                    <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-accent/20 p-2 rounded-lg">
+                          <Icon name="Coins" size={20} className="text-accent" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-white mb-1">Обмен мемкоина</h4>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Обменяйте ваши мемкоины на Boombucks
+                          </p>
+                          <div className="bg-background/50 p-3 rounded">
+                            <p className="text-lg font-bold text-accent">
+                              Курс: {exchangeRates.MEMECOIN} мемкоинов = 1 Boombuck
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-accent/10 border border-accent/30 rounded p-2 text-xs text-accent flex items-start gap-2">
+                        <Icon name="TrendingUp" size={14} className="mt-0.5 flex-shrink-0" />
+                        <span>Введите количество мемкоинов ниже для обмена на Boombucks</span>
+                      </div>
                     </div>
                   </TabsContent>
                 </Tabs>
 
                 <div className="space-y-2">
-                  <Label>Amount ({selectedCurrency})</Label>
+                  <Label>
+                    {selectedCurrency === 'MEMECOIN' ? 'Количество мемкоинов' : 
+                     selectedCurrency === 'USDT' ? 'Сумма USDT' :
+                     selectedCurrency === 'PHONE' ? 'Сумма в рублях' : 
+                     `Сумма (${selectedCurrency})`}
+                  </Label>
                   <Input 
                     type="number" 
-                    placeholder={`Enter amount in ${selectedCurrency}`}
+                    placeholder={
+                      selectedCurrency === 'MEMECOIN' ? 'Введите количество мемкоинов' :
+                      selectedCurrency === 'USDT' ? 'Введите сумму USDT' :
+                      selectedCurrency === 'PHONE' ? 'Введите сумму в рублях' :
+                      `Введите сумму в ${selectedCurrency}`
+                    }
                     value={buyAmount}
                     onChange={(e) => setBuyAmount(e.target.value)}
                     className="bg-background/50"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     {selectedCurrency === 'RUB' && [100, 500, 1000, 5000].map(amount => (
                       <Button 
                         key={amount}
@@ -337,7 +422,7 @@ const Index = () => {
                         ₽{amount}
                       </Button>
                     ))}
-                    {selectedCurrency === 'USD' && [10, 50, 100, 500].map(amount => (
+                    {selectedCurrency === 'PHONE' && [100, 300, 500, 1000].map(amount => (
                       <Button 
                         key={amount}
                         variant="outline" 
@@ -345,10 +430,10 @@ const Index = () => {
                         onClick={() => setBuyAmount(amount.toString())}
                         className="flex-1"
                       >
-                        ${amount}
+                        ₽{amount}
                       </Button>
                     ))}
-                    {selectedCurrency === 'EUR' && [10, 50, 100, 500].map(amount => (
+                    {selectedCurrency === 'USDT' && [1, 5, 10, 50].map(amount => (
                       <Button 
                         key={amount}
                         variant="outline" 
@@ -356,10 +441,10 @@ const Index = () => {
                         onClick={() => setBuyAmount(amount.toString())}
                         className="flex-1"
                       >
-                        €{amount}
+                        {amount} USDT
                       </Button>
                     ))}
-                    {selectedCurrency === 'KZT' && [5000, 20000, 50000, 100000].map(amount => (
+                    {selectedCurrency === 'MEMECOIN' && [100, 300, 500, 1000].map(amount => (
                       <Button 
                         key={amount}
                         variant="outline" 
@@ -367,7 +452,7 @@ const Index = () => {
                         onClick={() => setBuyAmount(amount.toString())}
                         className="flex-1"
                       >
-                        ₸{(amount/1000)}k
+                        {amount} MC
                       </Button>
                     ))}
                   </div>
@@ -376,43 +461,85 @@ const Index = () => {
                 {buyAmount && (
                   <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Amount:</span>
+                      <span>Сумма:</span>
                       <span className="font-bold">
                         {selectedCurrency === 'RUB' && `₽${buyAmount}`}
-                        {selectedCurrency === 'USD' && `$${buyAmount}`}
-                        {selectedCurrency === 'EUR' && `€${buyAmount}`}
-                        {selectedCurrency === 'KZT' && `₸${buyAmount}`}
+                        {selectedCurrency === 'PHONE' && `₽${buyAmount}`}
+                        {selectedCurrency === 'USDT' && `${buyAmount} USDT`}
+                        {selectedCurrency === 'MEMECOIN' && `${buyAmount} мемкоинов`}
                       </span>
                     </div>
-                    {selectedCurrency !== 'RUB' && (
+                    {(selectedCurrency === 'USDT' || selectedCurrency === 'MEMECOIN') && (
                       <div className="flex justify-between text-sm">
-                        <span>In Rubles:</span>
-                        <span>₽{(parseFloat(buyAmount) * exchangeRates[selectedCurrency]).toFixed(2)}</span>
+                        <span>
+                          {selectedCurrency === 'USDT' ? 'В рублях:' : 'Курс обмена:'}
+                        </span>
+                        <span>
+                          {selectedCurrency === 'USDT' && `₽${(parseFloat(buyAmount) * exchangeRates.USDT).toFixed(2)}`}
+                          {selectedCurrency === 'MEMECOIN' && `${exchangeRates.MEMECOIN} MC = 1 BB`}
+                        </span>
                       </div>
                     )}
+                    <div className="h-px bg-border my-2" />
                     <div className="flex justify-between text-lg font-bold">
-                      <span className="text-accent">You'll receive:</span>
+                      <span className="text-accent">Вы получите:</span>
                       <span className="text-accent flex items-center gap-1">
                         <Icon name="Coins" size={18} />
-                        {calculateBoombucks(buyAmount, selectedCurrency)} Boombucks
+                        {calculateBoombucks(buyAmount, selectedCurrency)} BB
                       </span>
                     </div>
                   </div>
                 )}
 
                 <div className="bg-background/30 p-3 rounded-lg space-y-1 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <Icon name="Coins" size={14} className="text-accent" />
-                    <span>1 Boombuck = ₽100</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Icon name="RefreshCw" size={14} className="text-blue-400" />
-                    <span>Rates updated in real-time</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Icon name="Zap" size={14} className="text-green-400" />
-                    <span>Instant delivery</span>
-                  </div>
+                  {selectedCurrency === 'USDT' && (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Icon name="Wallet" size={14} className="text-blue-400" />
+                        <span>Отправьте USDT на кошелёк выше</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Icon name="Clock" size={14} className="text-yellow-400" />
+                        <span>Проверка транзакции: 5-10 минут</span>
+                      </div>
+                    </>
+                  )}
+                  {selectedCurrency === 'PHONE' && (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Icon name="Smartphone" size={14} className="text-green-400" />
+                        <span>Переведите на номер через СБП</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Icon name="Zap" size={14} className="text-green-400" />
+                        <span>Мгновенное зачисление после проверки</span>
+                      </div>
+                    </>
+                  )}
+                  {selectedCurrency === 'MEMECOIN' && (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Icon name="Coins" size={14} className="text-accent" />
+                        <span>Курс: {exchangeRates.MEMECOIN} мемкоинов = 1 Boombuck</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Icon name="Zap" size={14} className="text-green-400" />
+                        <span>Мгновенный обмен</span>
+                      </div>
+                    </>
+                  )}
+                  {selectedCurrency === 'RUB' && (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Icon name="Coins" size={14} className="text-accent" />
+                        <span>1 Boombuck = ₽100</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Icon name="Zap" size={14} className="text-green-400" />
+                        <span>Мгновенная доставка</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -422,7 +549,7 @@ const Index = () => {
                   onClick={() => setBuyDialogOpen(false)}
                   className="flex-1"
                 >
-                  Cancel
+                  Отмена
                 </Button>
                 <Button 
                   onClick={handleBuyBoombucks}
@@ -430,7 +557,7 @@ const Index = () => {
                   className="bg-accent hover:bg-accent/90 flex-1"
                 >
                   <Icon name="ShoppingCart" className="mr-2" size={16} />
-                  Buy Now
+                  {selectedCurrency === 'USDT' || selectedCurrency === 'PHONE' ? 'Подтвердить' : 'Купить'}
                 </Button>
               </div>
             </DialogContent>
