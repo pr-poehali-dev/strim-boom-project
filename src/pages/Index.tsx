@@ -12,6 +12,8 @@ import { BottomNavigation } from '@/components/BottomNavigation';
 import { ProfilePage } from '@/components/ProfilePage';
 import { AdvertisingMarketplace } from '@/components/AdvertisingMarketplace';
 import { NotificationCenter } from '@/components/NotificationCenter';
+import { AdminLogin } from '@/components/AdminLogin';
+import { AdminPanel } from '@/components/AdminPanel';
 import { mockVideos, mockStreams, Transaction, Notification, Referral } from '@/components/types';
 
 const Index = () => {
@@ -27,6 +29,9 @@ const Index = () => {
 
   const cryptoWallet = 'UQCuFtQ2uMdPVRdhgEO_sOHhHwXZxXEG0anj-U0BRElk0zOk';
   const phoneNumber = '+79503994868';
+
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([
     {
       id: '1',
@@ -562,8 +567,14 @@ const Index = () => {
               </div>
             </DialogContent>
           </Dialog>
-          <Button variant="ghost" size="icon" className="text-white">
-            <Icon name="Search" size={24} />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="text-white"
+            onClick={() => setShowAdminLogin(true)}
+            title="Админ-панель"
+          >
+            <Icon name="Shield" size={24} />
           </Button>
         </div>
       </div>
@@ -611,6 +622,21 @@ const Index = () => {
         mockVideos={mockVideos}
         filteredVideos={filteredVideos}
       />
+
+      {showAdminLogin && !isAdminLoggedIn && (
+        <AdminLogin 
+          onLogin={() => {
+            setIsAdminLoggedIn(true);
+            setShowAdminLogin(false);
+          }}
+        />
+      )}
+
+      {isAdminLoggedIn && (
+        <AdminPanel 
+          onClose={() => setIsAdminLoggedIn(false)}
+        />
+      )}
     </div>
   );
 };

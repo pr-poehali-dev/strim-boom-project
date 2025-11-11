@@ -36,18 +36,26 @@ export const WithdrawTab = memo(({
       </h3>
 
       <div className="space-y-4">
+        <Alert className="bg-blue-500/10 border-blue-500/30">
+          <Icon name="Info" className="h-4 w-4 text-blue-400" />
+          <AlertDescription>
+            <strong>Минимальная сумма вывода: 10,000 BB</strong> (₽1,000,000 до вычета комиссии)
+          </AlertDescription>
+        </Alert>
+
         <div className="space-y-2">
-          <Label>Amount (Boombucks)</Label>
+          <Label>Сумма (Boombucks)</Label>
           <Input 
             type="number" 
-            placeholder="Enter amount"
+            placeholder="Минимум 10,000 BB"
             value={withdrawAmount}
             onChange={(e) => setWithdrawAmount(e.target.value)}
             max={userBoombucks}
+            min={10000}
             className="bg-background/50"
           />
           <div className="flex gap-2 flex-wrap">
-            {[10, 50, 100, 500].map(amount => (
+            {[10000, 20000, 50000, 100000].map(amount => (
               <Button 
                 key={amount}
                 variant="outline" 
@@ -55,7 +63,7 @@ export const WithdrawTab = memo(({
                 onClick={() => setWithdrawAmount(amount.toString())}
                 disabled={amount > userBoombucks}
               >
-                {amount} BB
+                {(amount / 1000)}k BB
               </Button>
             ))}
           </div>
@@ -113,27 +121,40 @@ export const WithdrawTab = memo(({
           </div>
         )}
 
+        {withdrawAmount && parseInt(withdrawAmount) < 10000 && (
+          <Alert className="bg-red-500/10 border-red-500/30">
+            <Icon name="AlertCircle" className="h-4 w-4 text-red-400" />
+            <AlertDescription>
+              Минимальная сумма вывода: 10,000 BB. Ваша сумма: {withdrawAmount} BB.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Button 
           onClick={handleWithdraw}
-          disabled={!withdrawAmount || parseInt(withdrawAmount) > userBoombucks || parseInt(withdrawAmount) <= 0 || !savedMethods[selectedMethod]}
+          disabled={!withdrawAmount || parseInt(withdrawAmount) > userBoombucks || parseInt(withdrawAmount) < 10000 || !savedMethods[selectedMethod]}
           className="w-full bg-accent hover:bg-accent/90"
         >
           <Icon name="Send" className="mr-2" size={16} />
-          Withdraw Funds
+          Создать заявку на вывод
         </Button>
 
         <div className="bg-background/30 p-3 rounded-lg space-y-1 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
+            <Icon name="UserCheck" size={14} className="text-purple-400" />
+            <span>Администратор обработает заявку вручную</span>
+          </div>
+          <div className="flex items-center gap-2">
             <Icon name="Clock" size={14} className="text-blue-400" />
-            <span>Processing time: 1-3 business days</span>
+            <span>Время обработки: 1-3 рабочих дня</span>
           </div>
           <div className="flex items-center gap-2">
             <Icon name="TrendingDown" size={14} className="text-orange-400" />
-            <span>30% platform fee on all withdrawals</span>
+            <span>Комиссия платформы: 30% от суммы</span>
           </div>
           <div className="flex items-center gap-2">
-            <Icon name="ShieldCheck" size={14} className="text-green-400" />
-            <span>Secure and encrypted transactions</span>
+            <Icon name="Smartphone" size={14} className="text-green-400" />
+            <span>Перевод по номеру телефона или карте</span>
           </div>
         </div>
       </div>

@@ -54,14 +54,14 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
 
   const handleWithdraw = useCallback(() => {
     const amount = parseInt(withdrawAmount);
-    if (amount > 0 && amount <= userBoombucks && savedMethods[selectedMethod]) {
+    if (amount >= 10000 && amount <= userBoombucks && savedMethods[selectedMethod]) {
       setUserBoombucks(userBoombucks - amount);
       
       const newTransaction: Transaction = {
         id: Date.now().toString(),
         type: 'withdraw',
         amount: amount,
-        description: `Withdrawal to ${selectedMethod}: ${savedMethods[selectedMethod].substring(0, 10)}...`,
+        description: `Заявка на вывод ${amount} BB на ${selectedMethod}: ${savedMethods[selectedMethod].substring(0, 10)}...`,
         date: new Date(),
         status: 'pending'
       };
