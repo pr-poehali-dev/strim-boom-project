@@ -196,7 +196,7 @@ export const useAppState = (currentUserId: number) => {
     RUB: 1,
     USDT: 95,
     PHONE: 1,
-    MEMECOIN: 100
+    MEMECOIN: 10
   }), []);
 
   const calculateBoombucks = useCallback((amount: string, currency: 'USD' | 'EUR' | 'KZT' | 'RUB' | 'USDT' | 'PHONE' | 'MEMECOIN') => {
@@ -204,7 +204,7 @@ export const useAppState = (currentUserId: number) => {
     if (isNaN(value) || value <= 0) return 0;
     
     if (currency === 'MEMECOIN') {
-      return Math.floor(value);
+      return Math.floor(value / exchangeRates.MEMECOIN);
     }
     
     const rubAmount = value * exchangeRates[currency];
