@@ -21,6 +21,7 @@ interface ProfilePageProps {
   referrals: Referral[];
   userId: number;
   onSimulateReferralPurchase: (username: string, amount: number) => void;
+  referralCode: string;
 }
 
 interface PaymentMethod {
@@ -29,7 +30,7 @@ interface PaymentMethod {
   label: string;
 }
 
-export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions, setTransactions, referrals, userId, onSimulateReferralPurchase }: ProfilePageProps) => {
+export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions, setTransactions, referrals, userId, onSimulateReferralPurchase, referralCode }: ProfilePageProps) => {
   const totalReferralEarnings = referrals.filter(r => r.status === 'rewarded').reduce((sum, r) => sum + r.rewardEarned, 0);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     { type: 'card', value: '', label: 'Bank Card (RU)' },
@@ -164,6 +165,7 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
               referrals={referrals}
               userId={userId}
               totalReferralEarnings={totalReferralEarnings}
+              referralCode={referralCode}
             />
           </TabsContent>
 

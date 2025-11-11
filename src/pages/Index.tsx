@@ -70,6 +70,7 @@ const Index = () => {
     notifications,
     setNotifications,
     referrals,
+    referralCode,
     handleMarkAsRead,
     handleMarkAllAsRead,
     handleClearAllNotifications,
@@ -140,6 +141,7 @@ const Index = () => {
           referrals={referrals}
           userId={currentUserId}
           onSimulateReferralPurchase={handleReferralPurchase}
+          referralCode={referralCode}
         />
       ) : activeTab === 'ads' ? (
         <AdvertisingMarketplace 

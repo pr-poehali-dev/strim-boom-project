@@ -1,11 +1,12 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { mockVideos, Transaction, Notification, Referral } from '@/components/types';
+import funcUrls from '../../backend/func2url.json';
 
 export const useAppState = (currentUserId: number) => {
   const [currentVideo, setCurrentVideo] = useState(0);
   const [liked, setLiked] = useState(false);
   const [activeTab, setActiveTab] = useState<'home' | 'trends' | 'streams' | 'upload' | 'profile' | 'ads'>('home');
-  const [userBoombucks, setUserBoombucks] = useState(1250);
+  const [userBoombucks, setUserBoombucks] = useState(0);
   const [showContentFilter, setShowContentFilter] = useState(true);
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
   const [buyAmount, setBuyAmount] = useState('');
@@ -13,25 +14,7 @@ export const useAppState = (currentUserId: number) => {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    {
-      id: '1',
-      type: 'buy',
-      amount: 500,
-      currency: 'RUB',
-      description: 'Purchased 5 Boombucks',
-      date: new Date(Date.now() - 86400000 * 2),
-      status: 'completed'
-    },
-    {
-      id: '2',
-      type: 'donation_sent',
-      amount: 50,
-      description: 'Donation to @cyber_artist',
-      date: new Date(Date.now() - 86400000),
-      status: 'completed'
-    }
-  ]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   const [notifications, setNotifications] = useState<Notification[]>([
     {
@@ -53,28 +36,8 @@ export const useAppState = (currentUserId: number) => {
     }
   ]);
 
-  const [referrals, setReferrals] = useState<Referral[]>([
-    {
-      id: '1',
-      referrerId: currentUserId,
-      referredUserId: 101,
-      referredUsername: '@newuser1',
-      purchaseAmount: 5,
-      rewardEarned: 1,
-      createdAt: new Date(Date.now() - 86400000 * 2),
-      status: 'rewarded'
-    },
-    {
-      id: '2',
-      referrerId: currentUserId,
-      referredUserId: 102,
-      referredUsername: '@newuser2',
-      purchaseAmount: 1,
-      rewardEarned: 0,
-      createdAt: new Date(Date.now() - 3600000),
-      status: 'pending'
-    }
-  ]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [referralCode, setReferralCode] = useState<string>('');
 
   const handleMarkAsRead = useCallback((id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
@@ -88,86 +51,70 @@ export const useAppState = (currentUserId: number) => {
     setNotifications([]);
   }, []);
 
-  const handleReferralPurchase = useCallback((referredUserId: number, referredUsername: string, purchaseAmount: number) => {
-    const existingReferral = referrals.find(r => r.referredUserId === referredUserId);
+  useEffect(() => {
+    const loadTransactions = async () => {
+      try {
+        const response = await fetch(`${funcUrls.transactions}?user_id=${currentUserId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setTransactions(data.transactions.map((t: any) => ({
+            ...t,
+            date: new Date(t.date)
+          })));
+        }
+      } catch (error) {
+        console.error('Failed to load transactions:', error);
+      }
+    };
     
-    if (existingReferral) {
-      const totalPurchase = existingReferral.purchaseAmount + purchaseAmount;
-      
-      if (existingReferral.status === 'pending' && totalPurchase >= 3) {
-        setReferrals(prev => prev.map(r => 
-          r.referredUserId === referredUserId 
-            ? { ...r, purchaseAmount: totalPurchase, status: 'rewarded' as const, rewardEarned: 1 }
-            : r
-        ));
-        
-        setUserBoombucks(prev => prev + 1);
-        
-        const newNotification: Notification = {
-          id: Date.now().toString(),
-          type: 'referral_reward',
-          title: 'Referral Reward!',
-          message: `${referredUsername} qualified! You earned 1 Boombuck`,
-          read: false,
-          createdAt: new Date()
-        };
-        setNotifications(prev => [newNotification, ...prev]);
-        
-        const rewardTransaction: Transaction = {
-          id: Date.now().toString(),
-          type: 'buy',
-          amount: 1,
-          description: `Referral reward from ${referredUsername}`,
-          date: new Date(),
-          status: 'completed'
-        };
-        setTransactions(prev => [rewardTransaction, ...prev]);
-      } else {
-        setReferrals(prev => prev.map(r => 
-          r.referredUserId === referredUserId 
-            ? { ...r, purchaseAmount: totalPurchase }
-            : r
-        ));
+    const loadReferrals = async () => {
+      try {
+        const response = await fetch(`${funcUrls.referrals}?user_id=${currentUserId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setReferrals(data.referrals.map((r: any) => ({
+            ...r,
+            createdAt: new Date(r.createdAt)
+          })));
+          setReferralCode(data.referralCode || '');
+        }
+      } catch (error) {
+        console.error('Failed to load referrals:', error);
       }
-    } else {
-      const newReferral: Referral = {
-        id: Date.now().toString(),
-        referrerId: currentUserId,
-        referredUserId,
-        referredUsername,
-        purchaseAmount,
-        rewardEarned: purchaseAmount >= 3 ? 1 : 0,
-        createdAt: new Date(),
-        status: purchaseAmount >= 3 ? 'rewarded' : 'pending'
-      };
-      
-      setReferrals(prev => [newReferral, ...prev]);
-      
-      if (purchaseAmount >= 3) {
-        setUserBoombucks(prev => prev + 1);
-        
-        const newNotification: Notification = {
-          id: Date.now().toString(),
-          type: 'referral_reward',
-          title: 'Referral Reward!',
-          message: `${referredUsername} qualified! You earned 1 Boombuck`,
-          read: false,
-          createdAt: new Date()
-        };
-        setNotifications(prev => [newNotification, ...prev]);
-        
-        const rewardTransaction: Transaction = {
-          id: Date.now().toString(),
-          type: 'buy',
-          amount: 1,
-          description: `Referral reward from ${referredUsername}`,
-          date: new Date(),
-          status: 'completed'
-        };
-        setTransactions(prev => [rewardTransaction, ...prev]);
-      }
+    };
+    
+    if (currentUserId) {
+      loadTransactions();
+      loadReferrals();
     }
-  }, [referrals, currentUserId]);
+  }, [currentUserId]);
+
+  const handleReferralPurchase = useCallback(async (referredUserId: number, referredUsername: string, purchaseAmount: number) => {
+    try {
+      const response = await fetch(funcUrls.referrals, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          referrer_id: currentUserId,
+          referred_user_id: referredUserId,
+          purchase_amount: purchaseAmount
+        })
+      });
+      
+      if (response.ok) {
+        const referralsResponse = await fetch(`${funcUrls.referrals}?user_id=${currentUserId}`);
+        if (referralsResponse.ok) {
+          const data = await referralsResponse.json();
+          setReferrals(data.referrals.map((r: any) => ({
+            ...r,
+            createdAt: new Date(r.createdAt)
+          })));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to process referral:', error);
+    }
+  }, [currentUserId]);
 
   const filteredVideos = useMemo(() => {
     return showContentFilter 
@@ -211,26 +158,45 @@ export const useAppState = (currentUserId: number) => {
     return Math.floor(rubAmount / 100);
   }, [exchangeRates]);
 
-  const handleBuyBoombucks = useCallback(() => {
+  const handleBuyBoombucks = useCallback(async () => {
     const boombucksToAdd = calculateBoombucks(buyAmount, selectedCurrency);
     if (boombucksToAdd > 0) {
-      setUserBoombucks(userBoombucks + boombucksToAdd);
-      
-      const newTransaction: Transaction = {
-        id: Date.now().toString(),
-        type: 'buy',
-        amount: boombucksToAdd,
-        currency: selectedCurrency,
-        description: `Purchased ${boombucksToAdd} Boombucks with ${selectedCurrency}`,
-        date: new Date(),
-        status: 'completed'
-      };
-      setTransactions(prev => [newTransaction, ...prev]);
-      
-      setBuyDialogOpen(false);
-      setBuyAmount('');
+      try {
+        const response = await fetch(funcUrls.transactions, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: currentUserId,
+            type: 'buy',
+            amount: boombucksToAdd,
+            currency: selectedCurrency,
+            description: `Покупка ${boombucksToAdd} BBS через ${selectedCurrency}`
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setUserBoombucks(userBoombucks + boombucksToAdd);
+          
+          const newTransaction: Transaction = {
+            id: data.transaction.id,
+            type: 'buy',
+            amount: boombucksToAdd,
+            currency: selectedCurrency,
+            description: data.transaction.description,
+            date: new Date(data.transaction.date),
+            status: 'completed'
+          };
+          setTransactions(prev => [newTransaction, ...prev]);
+          
+          setBuyDialogOpen(false);
+          setBuyAmount('');
+        }
+      } catch (error) {
+        console.error('Failed to buy boombucks:', error);
+      }
     }
-  }, [buyAmount, selectedCurrency, calculateBoombucks, userBoombucks]);
+  }, [buyAmount, selectedCurrency, calculateBoombucks, userBoombucks, currentUserId]);
 
   return {
     currentVideo,
@@ -258,6 +224,7 @@ export const useAppState = (currentUserId: number) => {
     notifications,
     setNotifications,
     referrals,
+    referralCode,
     handleMarkAsRead,
     handleMarkAllAsRead,
     handleClearAllNotifications,

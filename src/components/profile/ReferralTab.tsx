@@ -11,12 +11,13 @@ interface ReferralTabProps {
   referrals: Referral[];
   userId: number;
   totalReferralEarnings: number;
+  referralCode: string;
 }
 
-export const ReferralTab = memo(({ referrals, userId, totalReferralEarnings }: ReferralTabProps) => {
+export const ReferralTab = memo(({ referrals, userId, totalReferralEarnings, referralCode }: ReferralTabProps) => {
   const [copied, setCopied] = useState(false);
 
-  const referralLink = `https://streamboom.app/ref/${userId}`;
+  const referralLink = `https://streamboom.app/ref/${referralCode || userId}`;
 
   const handleCopyLink = useCallback(() => {
     navigator.clipboard.writeText(referralLink);
