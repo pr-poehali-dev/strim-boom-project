@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "Get donations for stream",
+      "method": "GET",
+      "path": "/?stream_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "donations": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Send donation",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "stream_id": 1,
+        "from_user_id": 1,
+        "amount": 100,
+        "message": "Great stream!"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "donation": {
+          "id": "number",
+          "amount": "number"
+        }
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

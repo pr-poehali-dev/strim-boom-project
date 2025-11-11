@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog } from '@/components/ui/dialog';
 import { VideoCard } from '@/components/VideoCard';
 import { StreamsList } from '@/components/StreamsList';
@@ -10,14 +10,28 @@ import { AdminPanel } from '@/components/AdminPanel';
 import { AppHeader } from '@/components/home/AppHeader';
 import { BuyBoombucksDialog } from '@/components/home/BuyBoombucksDialog';
 import { StreamView } from '@/components/stream/StreamView';
+import { LoginForm } from '@/components/auth/LoginForm';
+import { RegisterForm } from '@/components/auth/RegisterForm';
 import { useAppState } from '@/hooks/useAppState';
+import { useStreams } from '@/hooks/useStreams';
 import { mockStreams, Stream } from '@/components/types';
 
 const Index = () => {
-  const currentUserId = 1;
+  const [user, setUser] = useState<any>(null);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const cryptoWallet = 'UQCuFtQ2uMdPVRdhgEO_sOHhHwXZxXEG0anj-U0BRElk0zOk';
   const phoneNumber = '+79503994868';
   const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
+  const { streams } = useStreams();
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  const currentUserId = user?.id || 1;
 
   const {
     currentVideo,
@@ -86,9 +100,23 @@ const Index = () => {
         />
       </Dialog>
 
-      {activeTab === 'streams' ? (
+      {!user ? (
+        <div className="flex items-center justify-center min-h-screen">
+          {authMode === 'login' ? (
+            <LoginForm 
+              onSuccess={(userData) => setUser(userData)}
+              onSwitchToRegister={() => setAuthMode('register')}
+            />
+          ) : (
+            <RegisterForm 
+              onSuccess={(userData) => setUser(userData)}
+              onSwitchToLogin={() => setAuthMode('login')}
+            />
+          )}
+        </div>
+      ) : activeTab === 'streams' ? (
         <StreamsList 
-          streams={mockStreams} 
+          streams={streams.length > 0 ? streams : mockStreams} 
           onStreamClick={setSelectedStream}
         />
       ) : activeTab === 'profile' ? (

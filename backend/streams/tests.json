@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "Get live streams",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "streams": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create new stream",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "user_id": 1,
+        "title": "Test Stream",
+        "category": "Игры"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "stream": {
+          "id": "number",
+          "title": "string",
+          "streamKey": "string"
+        }
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
