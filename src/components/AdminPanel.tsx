@@ -2,13 +2,11 @@ import { memo, useState, useCallback } from 'react';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Transaction } from './types';
+import { WithdrawalRequestsList } from '@/components/admin/WithdrawalRequestsList';
+import { BuyBoombucksTab } from '@/components/admin/BuyBoombucksTab';
+import { SellBoombucksTab } from '@/components/admin/SellBoombucksTab';
+import { ProcessWithdrawalDialog } from '@/components/admin/ProcessWithdrawalDialog';
 
 interface WithdrawalRequest {
   id: string;
@@ -122,6 +120,16 @@ export const AdminPanel = memo(({ onClose }: AdminPanelProps) => {
     }
   };
 
+  const handleProcessRequest = useCallback((request: WithdrawalRequest) => {
+    setSelectedRequest(request);
+    setProcessDialogOpen(true);
+  }, []);
+
+  const handleApproveAndClose = useCallback((requestId: string) => {
+    handleApproveWithdrawal(requestId);
+    setSelectedRequest(null);
+  }, [handleApproveWithdrawal]);
+
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl overflow-y-auto">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -183,322 +191,44 @@ export const AdminPanel = memo(({ onClose }: AdminPanelProps) => {
           </TabsList>
 
           <TabsContent value="withdrawals" className="space-y-4">
-            {withdrawalRequests.length === 0 ? (
-              <Card className="bg-card/50 backdrop-blur-lg border-primary/30 p-8">
-                <div className="text-center">
-                  <Icon name="Inbox" size={48} className="mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">Нет заявок на вывод</p>
-                </div>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                {withdrawalRequests.map(request => (
-                  <Card key={request.id} className="bg-card/50 backdrop-blur-lg border-primary/30 p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-bold text-white">{request.username}</h4>
-                            <p className="text-xs text-muted-foreground">ID: {request.userId}</p>
-                          </div>
-                          <Badge className={getStatusColor(request.status)}>
-                            <Icon name={getStatusIcon(request.status)} size={12} className="mr-1" />
-                            {request.status === 'pending' && 'Ожидает'}
-                            {request.status === 'processing' && 'Обрабатывается'}
-                            {request.status === 'completed' && 'Завершено'}
-                            {request.status === 'rejected' && 'Отклонено'}
-                          </Badge>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="bg-background/50 p-3 rounded">
-                            <p className="text-xs text-muted-foreground mb-1">Сумма</p>
-                            <p className="font-bold text-white flex items-center gap-1">
-                              <Icon name="Coins" size={14} className="text-accent" />
-                              {request.amount.toLocaleString()} BB
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              ≈ ₽{(request.amount * 100 * 0.7).toLocaleString()}
-                            </p>
-                          </div>
-
-                          <div className="bg-background/50 p-3 rounded">
-                            <p className="text-xs text-muted-foreground mb-1">Метод вывода</p>
-                            <p className="font-bold text-white">
-                              {request.method === 'card' && 'Банковская карта'}
-                              {request.method === 'phone' && 'Номер телефона'}
-                              {request.method === 'crypto' && 'USDT'}
-                            </p>
-                            <p className="font-mono text-xs text-muted-foreground">
-                              {request.methodDetails}
-                            </p>
-                          </div>
-                        </div>
-
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Icon name="Calendar" size={12} />
-                          {formatDate(request.createdAt)}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        {request.status === 'pending' && (
-                          <>
-                            <Button 
-                              size="sm"
-                              onClick={() => {
-                                setSelectedRequest(request);
-                                setProcessDialogOpen(true);
-                              }}
-                              className="bg-blue-500 hover:bg-blue-600"
-                            >
-                              <Icon name="Play" size={14} className="mr-1" />
-                              Обработать
-                            </Button>
-                            <Button 
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleRejectWithdrawal(request.id)}
-                              className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-                            >
-                              <Icon name="X" size={14} className="mr-1" />
-                              Отклонить
-                            </Button>
-                          </>
-                        )}
-                        {request.status === 'processing' && (
-                          <Button 
-                            size="sm"
-                            onClick={() => handleCompleteWithdrawal(request.id)}
-                            className="bg-green-500 hover:bg-green-600"
-                          >
-                            <Icon name="CheckCircle" size={14} className="mr-1" />
-                            Завершить
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
+            <WithdrawalRequestsList
+              withdrawalRequests={withdrawalRequests}
+              onProcess={handleProcessRequest}
+              onReject={handleRejectWithdrawal}
+              onComplete={handleCompleteWithdrawal}
+              formatDate={formatDate}
+              getStatusColor={getStatusColor}
+              getStatusIcon={getStatusIcon}
+            />
           </TabsContent>
 
           <TabsContent value="buy" className="space-y-4">
-            <Card className="bg-card/50 backdrop-blur-lg border-primary/30 p-6">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <Icon name="ShoppingCart" className="text-green-400" />
-                Купить бумчики у пользователя
-              </h3>
-              
-              <div className="space-y-4">
-                <Alert className="bg-blue-500/10 border-blue-500/30">
-                  <Icon name="Info" className="h-4 w-4 text-blue-400" />
-                  <AlertDescription>
-                    Эта операция добавит бумчики пользователю после оплаты
-                  </AlertDescription>
-                </Alert>
-
-                <div className="space-y-2">
-                  <Label>ID пользователя</Label>
-                  <Input 
-                    type="number"
-                    placeholder="Введите ID пользователя"
-                    value={buyUserId}
-                    onChange={(e) => setBuyUserId(e.target.value)}
-                    className="bg-background/50"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Количество бумчиков</Label>
-                  <Input 
-                    type="number"
-                    placeholder="Введите количество BB"
-                    value={buyAmount}
-                    onChange={(e) => setBuyAmount(e.target.value)}
-                    className="bg-background/50"
-                  />
-                  <div className="flex gap-2">
-                    {[100, 500, 1000, 5000].map(amount => (
-                      <Button 
-                        key={amount}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setBuyAmount(amount.toString())}
-                        className="flex-1"
-                      >
-                        {amount} BB
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                {buyAmount && (
-                  <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Сумма к оплате:</span>
-                      <span className="font-bold text-accent">₽{(parseInt(buyAmount) * 100).toLocaleString()}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Пользователь получит {buyAmount} BB после подтверждения
-                    </p>
-                  </div>
-                )}
-
-                <Button 
-                  onClick={handleBuyBoombucks}
-                  disabled={!buyAmount || !buyUserId}
-                  className="w-full bg-green-500 hover:bg-green-600"
-                >
-                  <Icon name="ShoppingCart" className="mr-2" size={16} />
-                  Купить и начислить
-                </Button>
-              </div>
-            </Card>
+            <BuyBoombucksTab
+              buyAmount={buyAmount}
+              setBuyAmount={setBuyAmount}
+              buyUserId={buyUserId}
+              setBuyUserId={setBuyUserId}
+              onBuyBoombucks={handleBuyBoombucks}
+            />
           </TabsContent>
 
           <TabsContent value="sell" className="space-y-4">
-            <Card className="bg-card/50 backdrop-blur-lg border-primary/30 p-6">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <Icon name="TrendingDown" className="text-orange-400" />
-                Продать бумчики пользователя
-              </h3>
-              
-              <div className="space-y-4">
-                <Alert className="bg-orange-500/10 border-orange-500/30">
-                  <Icon name="AlertCircle" className="h-4 w-4 text-orange-400" />
-                  <AlertDescription>
-                    Эта операция спишет бумчики у пользователя (для возврата или корректировки)
-                  </AlertDescription>
-                </Alert>
-
-                <div className="space-y-2">
-                  <Label>ID пользователя</Label>
-                  <Input 
-                    type="number"
-                    placeholder="Введите ID пользователя"
-                    value={sellUserId}
-                    onChange={(e) => setSellUserId(e.target.value)}
-                    className="bg-background/50"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Количество бумчиков</Label>
-                  <Input 
-                    type="number"
-                    placeholder="Введите количество BB"
-                    value={sellAmount}
-                    onChange={(e) => setSellAmount(e.target.value)}
-                    className="bg-background/50"
-                  />
-                  <div className="flex gap-2">
-                    {[100, 500, 1000, 5000].map(amount => (
-                      <Button 
-                        key={amount}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSellAmount(amount.toString())}
-                        className="flex-1"
-                      >
-                        {amount} BB
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                {sellAmount && (
-                  <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Будет списано:</span>
-                      <span className="font-bold text-orange-400">{sellAmount} BB</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Используйте для возврата средств или корректировки баланса
-                    </p>
-                  </div>
-                )}
-
-                <Button 
-                  onClick={handleSellBoombucks}
-                  disabled={!sellAmount || !sellUserId}
-                  className="w-full bg-orange-500 hover:bg-orange-600"
-                >
-                  <Icon name="TrendingDown" className="mr-2" size={16} />
-                  Списать бумчики
-                </Button>
-              </div>
-            </Card>
+            <SellBoombucksTab
+              sellAmount={sellAmount}
+              setSellAmount={setSellAmount}
+              sellUserId={sellUserId}
+              setSellUserId={setSellUserId}
+              onSellBoombucks={handleSellBoombucks}
+            />
           </TabsContent>
         </Tabs>
 
-        <Dialog open={processDialogOpen} onOpenChange={setProcessDialogOpen}>
-          <DialogContent className="bg-card/95 backdrop-blur-xl border-primary/30">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                <Icon name="Smartphone" className="text-blue-400" />
-                Обработка выплаты
-              </DialogTitle>
-              <DialogDescription>
-                Подтвердите перевод средств пользователю
-              </DialogDescription>
-            </DialogHeader>
-
-            {selectedRequest && (
-              <div className="space-y-4 py-4">
-                <div className="bg-background/50 p-4 rounded-lg space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Пользователь:</span>
-                    <span className="font-bold text-white">{selectedRequest.username}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Сумма BB:</span>
-                    <span className="font-bold text-accent">{selectedRequest.amount.toLocaleString()} BB</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">К переводу:</span>
-                    <span className="font-bold text-green-400">₽{(selectedRequest.amount * 100 * 0.7).toLocaleString()}</span>
-                  </div>
-                  <div className="h-px bg-border" />
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Реквизиты:</p>
-                    <p className="font-mono text-sm text-white">{selectedRequest.methodDetails}</p>
-                  </div>
-                </div>
-
-                <Alert className="bg-blue-500/10 border-blue-500/30">
-                  <Icon name="Info" className="h-4 w-4 text-blue-400" />
-                  <AlertDescription className="text-sm">
-                    После нажатия "Обработать" переведите средства по указанным реквизитам. Затем нажмите "Завершить" в списке заявок.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
-
-            <DialogFooter>
-              <Button 
-                variant="outline"
-                onClick={() => setProcessDialogOpen(false)}
-              >
-                Отмена
-              </Button>
-              <Button 
-                onClick={() => {
-                  if (selectedRequest) {
-                    handleApproveWithdrawal(selectedRequest.id);
-                    setProcessDialogOpen(false);
-                    setSelectedRequest(null);
-                  }
-                }}
-                className="bg-blue-500 hover:bg-blue-600"
-              >
-                <Icon name="Play" className="mr-2" size={16} />
-                Обработать
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <ProcessWithdrawalDialog
+          open={processDialogOpen}
+          onOpenChange={setProcessDialogOpen}
+          selectedRequest={selectedRequest}
+          onApprove={handleApproveAndClose}
+        />
       </div>
     </div>
   );
