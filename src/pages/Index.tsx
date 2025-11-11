@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VideoCard } from '@/components/VideoCard';
 import { StreamsList } from '@/components/StreamsList';
 import { BottomNavigation } from '@/components/BottomNavigation';
+import { ProfilePage } from '@/components/ProfilePage';
 import { mockVideos, mockStreams } from '@/components/types';
 
 const Index = () => {
@@ -244,6 +245,11 @@ const Index = () => {
 
       {activeTab === 'streams' ? (
         <StreamsList streams={mockStreams} />
+      ) : activeTab === 'profile' ? (
+        <ProfilePage 
+          userBoombucks={userBoombucks}
+          setUserBoombucks={setUserBoombucks}
+        />
       ) : (
         <div className="h-full w-full flex items-center justify-center pt-20 pb-24">
           <VideoCard 
