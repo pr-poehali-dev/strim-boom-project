@@ -17,7 +17,7 @@ export const AdminLogin = memo(({ onLogin }: AdminLoginProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const ADMIN_EMAIL = 'Vladimirvvsa752@gmail.com';
-  const ADMIN_PASSWORD = 'Tamar@1995vvs4868';
+  const ADMIN_PASSWORD = 'Vladimir,Tamara,Danila,Horinsk';
 
   const handleLogin = useCallback(() => {
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
