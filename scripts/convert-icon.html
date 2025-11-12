@@ -11,11 +11,11 @@
     </style>
 </head>
 <body>
-    <h1>SVG to PNG Icon Converter</h1>
-    <p>Конвертация favicon.svg в PNG иконки для PWA</p>
-    <button id="loadSVG">Загрузить favicon.svg из проекта</button>
+    <h1>STREAM BOOM Icon Generator</h1>
+    <p>Генерация PNG иконок для PWA из Stream Boom логотипа</p>
+    <button id="loadStreamBoom">Загрузить Stream Boom Logo</button>
     <p>или</p>
-    <input type="file" id="input" accept="image/svg+xml,image/*">
+    <input type="file" id="input" accept="image/*">
     <div class="preview">
         <div>
             <p>192x192</p>
@@ -39,26 +39,20 @@
         const ctx512 = canvas512.getContext('2d');
         let img = null;
 
-        async function loadFavicon() {
-            try {
-                const response = await fetch('/favicon.svg');
-                const svgText = await response.text();
-                const blob = new Blob([svgText], { type: 'image/svg+xml' });
-                const url = URL.createObjectURL(blob);
-                loadImage(url);
-            } catch (error) {
-                alert('Не удалось загрузить favicon.svg. Используйте загрузку файла.');
-            }
+        async function loadStreamBoomLogo() {
+            const logoUrl = 'https://cdn.poehali.dev/files/8af0fa73-0b2f-4c2d-ad5e-cdc9818bab3c.jpg';
+            loadImage(logoUrl);
         }
 
         function loadImage(src) {
             img = new Image();
+            img.crossOrigin = 'anonymous';
             img.onload = () => {
-                ctx192.fillStyle = '#8b5cf6';
+                ctx192.fillStyle = '#0a0a0a';
                 ctx192.fillRect(0, 0, 192, 192);
                 ctx192.drawImage(img, 0, 0, 192, 192);
                 
-                ctx512.fillStyle = '#8b5cf6';
+                ctx512.fillStyle = '#0a0a0a';
                 ctx512.fillRect(0, 0, 512, 512);
                 ctx512.drawImage(img, 0, 0, 512, 512);
             };
@@ -74,7 +68,7 @@
             reader.readAsDataURL(file);
         });
 
-        document.getElementById('loadSVG').addEventListener('click', loadFavicon);
+        document.getElementById('loadStreamBoom').addEventListener('click', loadStreamBoomLogo);
 
         function createMaskable(canvas, size) {
             const maskCanvas = document.createElement('canvas');
@@ -82,11 +76,9 @@
             maskCanvas.height = size;
             const maskCtx = maskCanvas.getContext('2d');
             
-            // Purple background
-            maskCtx.fillStyle = '#8b5cf6';
+            maskCtx.fillStyle = '#0a0a0a';
             maskCtx.fillRect(0, 0, size, size);
             
-            // Draw icon smaller (80% safe zone for maskable)
             const iconSize = size * 0.8;
             const offset = size * 0.1;
             maskCtx.drawImage(canvas, offset, offset, iconSize, iconSize);
@@ -124,7 +116,7 @@
             link.click();
         });
 
-        window.addEventListener('load', loadFavicon);
+        window.addEventListener('load', loadStreamBoomLogo);
     </script>
 </body>
 </html>
