@@ -39,7 +39,8 @@ const Index = () => {
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      const userData = JSON.parse(savedUser);
+      setUser(userData);
     }
   }, []);
 
@@ -82,6 +83,12 @@ const Index = () => {
     calculateBoombucks,
     handleBuyBoombucks
   } = useAppState(currentUserId);
+
+  useEffect(() => {
+    if (user?.boombucks !== undefined) {
+      setUserBoombucks(user.boombucks);
+    }
+  }, [user, setUserBoombucks]);
 
   return (
     <div className="h-screen w-screen bg-background overflow-hidden relative">

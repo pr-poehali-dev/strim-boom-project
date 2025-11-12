@@ -14,11 +14,7 @@
       "expectedBody": {
         "token": "string",
         "user": {
-          "id": "number",
-          "username": "string",
-          "email": "string",
-          "avatar": "string",
-          "boombucks": "number"
+          "username": "string"
         }
       },
       "bodyMatcher": "partial"

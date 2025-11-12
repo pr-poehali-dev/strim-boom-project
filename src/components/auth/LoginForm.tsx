@@ -43,6 +43,8 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
       localStorage.setItem('auth_token', result.token);
       localStorage.setItem('user', JSON.stringify(result.user));
       
+      window.location.reload();
+      
       onSuccess(result.user, result.token);
       
       toast({

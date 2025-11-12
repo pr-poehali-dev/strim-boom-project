@@ -58,9 +58,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             avatar = f'https://api.dicebear.com/7.x/avataaars/svg?seed={username}'
             
             cur.execute(
-                "INSERT INTO users (username, email, password_hash, avatar) VALUES (%s, %s, %s, %s) RETURNING id, username, email, avatar, boombucks",
-                (username, email, password_hash, avatar)
+                "SELECT id FROM t_p37705306_strim_boom_project.users WHERE email = %s",
+                (email,)
             )
+            existing_user = cur.fetchone()
+            
+            if existing_user:
+                cur.execute(
+                    "UPDATE t_p37705306_strim_boom_project.users SET username = %s, password_hash = %s, avatar = %s WHERE email = %s RETURNING id, username, email, avatar, boombucks",
+                    (username, password_hash, avatar, email)
+                )
+            else:
+                cur.execute(
+                    "INSERT INTO t_p37705306_strim_boom_project.users (username, email, password_hash, avatar) VALUES (%s, %s, %s, %s) RETURNING id, username, email, avatar, boombucks",
+                    (username, email, password_hash, avatar)
+                )
             user = cur.fetchone()
             conn.commit()
             
@@ -95,7 +107,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             password_hash = hashlib.sha256(password.encode()).hexdigest()
             
             cur.execute(
-                "SELECT id, username, email, avatar, boombucks FROM users WHERE email = %s AND password_hash = %s",
+                "SELECT id, username, email, avatar, boombucks FROM t_p37705306_strim_boom_project.users WHERE email = %s AND password_hash = %s",
                 (email, password_hash)
             )
             user = cur.fetchone()
