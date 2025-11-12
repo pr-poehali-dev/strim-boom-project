@@ -59,31 +59,32 @@ export const StreamView = memo(({
           />
         </div>
 
-        <div className="relative h-full flex flex-col">
-          <div className="flex items-center justify-between p-4 bg-background/50 backdrop-blur-lg border-b border-primary/30">
+        <div className="relative h-full flex flex-col safe-area-top safe-area-bottom">
+          <div className="flex items-center justify-between p-3 md:p-4 bg-background/50 backdrop-blur-lg border-b border-primary/30">
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="text-white"
+              className="text-white active:scale-95 transition-transform"
             >
-              <Icon name="ArrowLeft" size={24} />
+              <Icon name="ArrowLeft" size={22} />
             </Button>
 
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 border-2 border-primary">
+            <div className="flex items-center gap-2 md:gap-3">
+              <Avatar className="h-8 w-8 md:h-10 md:w-10 border-2 border-primary">
                 <AvatarImage src={stream.avatar} />
-                <AvatarFallback>{stream.username[1]}</AvatarFallback>
+                <AvatarFallback>{stream.username[0]}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-bold text-white">{stream.username}</p>
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-accent text-white px-2 py-0 text-xs flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                <p className="font-bold text-white text-sm md:text-base">{stream.username}</p>
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <Badge className="bg-red-600 text-white px-1.5 py-0 text-[10px] md:text-xs flex items-center gap-1">
+                    <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-white rounded-full animate-pulse" />
                     LIVE
                   </Badge>
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Icon name="Eye" size={12} />
+                  <span className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-0.5">
+                    <Icon name="Eye" size={10} className="md:hidden" />
+                    <Icon name="Eye" size={12} className="hidden md:inline" />
                     {stream.viewers.toLocaleString()}
                   </span>
                 </div>
@@ -102,31 +103,33 @@ export const StreamView = memo(({
             </div>
           </div>
 
-          <div className="flex-1 flex items-center justify-center p-4">
-            <div className="w-full max-w-4xl">
+          <div className="flex-1 flex items-center justify-center p-2 md:p-4">
+            <div className="w-full h-full md:max-w-4xl">
               {stream.isLive && stream.streamKey ? (
-                <LiveStreamViewer 
-                  streamId={stream.id}
-                  streamKey={stream.streamKey}
-                />
+                <div className="w-full h-full md:aspect-video">
+                  <LiveStreamViewer 
+                    streamId={stream.id}
+                    streamKey={stream.streamKey}
+                  />
+                </div>
               ) : (
-                <div className="aspect-video bg-background/30 backdrop-blur-sm rounded-lg border border-primary/30 flex items-center justify-center">
-                  <div className="text-center">
-                    <Icon name="Video" size={64} className="mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-white font-bold text-xl mb-2">{stream.title}</p>
-                    <p className="text-muted-foreground">Стрим завершён</p>
+                <div className="w-full h-full md:aspect-video bg-background/30 backdrop-blur-sm rounded-lg border border-primary/30 flex items-center justify-center">
+                  <div className="text-center px-4">
+                    <Icon name="Video" size={48} className="md:w-16 md:h-16 mx-auto mb-3 md:mb-4 text-muted-foreground" />
+                    <p className="text-white font-bold text-lg md:text-xl mb-2">{stream.title}</p>
+                    <p className="text-muted-foreground text-sm md:text-base">Стрим завершён</p>
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="p-4 bg-background/50 backdrop-blur-lg border-t border-primary/30">
+          <div className="p-3 md:p-4 bg-background/50 backdrop-blur-lg border-t border-primary/30">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-white font-bold text-lg">{stream.title}</h3>
-                  <p className="text-sm text-muted-foreground">{stream.category}</p>
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-3 md:mb-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-white font-bold text-base md:text-lg line-clamp-2">{stream.title}</h3>
+                  <p className="text-xs md:text-sm text-muted-foreground">{stream.category}</p>
                 </div>
                 
                 {!isStreamer && (

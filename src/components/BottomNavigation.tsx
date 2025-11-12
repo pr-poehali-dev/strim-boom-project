@@ -35,54 +35,54 @@ export const BottomNavigation = memo(({
     setActiveTab(tab);
   }, [setActiveTab]);
   return (
-    <nav className="absolute bottom-0 left-0 right-0 z-20 bg-card/80 backdrop-blur-lg border-t border-primary/20">
-      <div className="flex items-center justify-around py-3">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-primary/30 safe-area-bottom">
+      <div className="flex items-center justify-around py-2 px-2 max-w-screen-xl mx-auto">
         <button 
           onClick={() => handleTabClick('home')}
-          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'home' ? 'text-primary' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center gap-0.5 transition-all active:scale-95 p-2 rounded-lg ${activeTab === 'home' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
         >
-          <Icon name="Home" size={24} />
-          <span className="text-xs">Главная</span>
+          <Icon name="Home" size={22} />
+          <span className="text-[10px] font-medium">Главная</span>
         </button>
 
         <button 
           onClick={() => handleTabClick('trends')}
-          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'trends' ? 'text-primary' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center gap-0.5 transition-all active:scale-95 p-2 rounded-lg ${activeTab === 'trends' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
         >
-          <Icon name="TrendingUp" size={24} />
-          <span className="text-xs">Тренды</span>
+          <Icon name="TrendingUp" size={22} />
+          <span className="text-[10px] font-medium">Тренды</span>
         </button>
 
         <button 
           onClick={() => handleTabClick('streams')}
-          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'streams' ? 'text-primary' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center gap-0.5 transition-all active:scale-95 p-2 rounded-lg ${activeTab === 'streams' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
         >
-          <Icon name="Radio" size={24} />
-          <span className="text-xs">Стримы</span>
+          <Icon name="Radio" size={22} />
+          <span className="text-[10px] font-medium">Стримы</span>
         </button>
 
         <button 
           onClick={() => handleTabClick('ads')}
-          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'ads' ? 'text-primary' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center gap-0.5 transition-all active:scale-95 p-2 rounded-lg ${activeTab === 'ads' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
         >
-          <Icon name="Megaphone" size={24} />
-          <span className="text-xs">Реклама</span>
+          <Icon name="Megaphone" size={22} />
+          <span className="text-[10px] font-medium">Реклама</span>
         </button>
 
         <button 
           onClick={onStartStream}
-          className="relative -mt-4"
+          className="relative -mt-6 transition-all active:scale-95"
         >
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-red-700 shadow-lg shadow-red-500/50">
-            <Icon name="Video" size={28} className="text-white" />
+          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-red-700 shadow-xl shadow-red-500/60 animate-pulse-glow">
+            <Icon name="Video" size={26} className="text-white" />
           </div>
         </button>
 
         <Dialog>
           <DialogTrigger asChild>
-            <button className="flex flex-col items-center gap-1 transition-colors text-muted-foreground">
-              <Icon name="ShieldCheck" size={24} />
-              <span className="text-xs">Фильтр</span>
+            <button className="flex flex-col items-center gap-0.5 transition-all active:scale-95 p-2 rounded-lg text-muted-foreground">
+              <Icon name="ShieldCheck" size={22} />
+              <span className="text-[10px] font-medium">Фильтр</span>
             </button>
           </DialogTrigger>
           <DialogContent className="bg-card/95 backdrop-blur-xl border-primary/30">
@@ -150,10 +150,10 @@ export const BottomNavigation = memo(({
 
         <button 
           onClick={() => handleTabClick('profile')}
-          className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'profile' ? 'text-primary' : 'text-muted-foreground'}`}
+          className={`flex flex-col items-center gap-0.5 transition-all active:scale-95 p-2 rounded-lg ${activeTab === 'profile' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
         >
-          <Icon name="User" size={24} />
-          <span className="text-xs">Профиль</span>
+          <Icon name="User" size={22} />
+          <span className="text-[10px] font-medium">Профиль</span>
         </button>
       </div>
     </nav>
