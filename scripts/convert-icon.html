@@ -1,15 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Icon Converter</title>
+    <title>Icon Converter - SVG to PNG</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #0a0a0a; color: white; }
+        canvas { border: 1px solid #8b5cf6; margin: 10px; background: white; }
+        button { margin: 5px; padding: 10px 20px; cursor: pointer; background: #8b5cf6; color: white; border: none; border-radius: 5px; }
+        button:hover { background: #7c3aed; }
+        .preview { display: flex; gap: 20px; margin: 20px 0; }
+    </style>
 </head>
 <body>
-    <h1>Convert Icon to PNG</h1>
-    <input type="file" id="input" accept="image/*">
-    <br><br>
-    <canvas id="canvas192" width="192" height="192"></canvas>
-    <canvas id="canvas512" width="512" height="512"></canvas>
-    <br><br>
+    <h1>SVG to PNG Icon Converter</h1>
+    <p>Конвертация favicon.svg в PNG иконки для PWA</p>
+    <button id="loadSVG">Загрузить favicon.svg из проекта</button>
+    <p>или</p>
+    <input type="file" id="input" accept="image/svg+xml,image/*">
+    <div class="preview">
+        <div>
+            <p>192x192</p>
+            <canvas id="canvas192" width="192" height="192"></canvas>
+        </div>
+        <div>
+            <p>512x512</p>
+            <canvas id="canvas512" width="512" height="512"></canvas>
+        </div>
+    </div>
     <button id="download192">Download 192x192 PNG</button>
     <button id="download192mask">Download 192x192 Maskable PNG</button>
     <button id="download512">Download 512x512 PNG</button>
@@ -23,26 +39,42 @@
         const ctx512 = canvas512.getContext('2d');
         let img = null;
 
+        async function loadFavicon() {
+            try {
+                const response = await fetch('/favicon.svg');
+                const svgText = await response.text();
+                const blob = new Blob([svgText], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                loadImage(url);
+            } catch (error) {
+                alert('Не удалось загрузить favicon.svg. Используйте загрузку файла.');
+            }
+        }
+
+        function loadImage(src) {
+            img = new Image();
+            img.onload = () => {
+                ctx192.fillStyle = '#8b5cf6';
+                ctx192.fillRect(0, 0, 192, 192);
+                ctx192.drawImage(img, 0, 0, 192, 192);
+                
+                ctx512.fillStyle = '#8b5cf6';
+                ctx512.fillRect(0, 0, 512, 512);
+                ctx512.drawImage(img, 0, 0, 512, 512);
+            };
+            img.src = src;
+        }
+
         input.addEventListener('change', (e) => {
             const file = e.target.files[0];
             const reader = new FileReader();
             reader.onload = (event) => {
-                img = new Image();
-                img.onload = () => {
-                    // Draw 192x192
-                    ctx192.fillStyle = '#8b5cf6';
-                    ctx192.fillRect(0, 0, 192, 192);
-                    ctx192.drawImage(img, 0, 0, 192, 192);
-                    
-                    // Draw 512x512
-                    ctx512.fillStyle = '#8b5cf6';
-                    ctx512.fillRect(0, 0, 512, 512);
-                    ctx512.drawImage(img, 0, 0, 512, 512);
-                };
-                img.src = event.target.result;
+                loadImage(event.target.result);
             };
             reader.readAsDataURL(file);
         });
+
+        document.getElementById('loadSVG').addEventListener('click', loadFavicon);
 
         function createMaskable(canvas, size) {
             const maskCanvas = document.createElement('canvas');
@@ -91,6 +123,8 @@
             link.href = maskCanvas.toDataURL('image/png');
             link.click();
         });
+
+        window.addEventListener('load', loadFavicon);
     </script>
 </body>
 </html>

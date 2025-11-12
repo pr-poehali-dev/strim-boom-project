@@ -92,6 +92,24 @@ export const StreamView = memo(({
             </div>
 
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  if ('serviceWorker' in navigator && 'caches' in window) {
+                    caches.open('stream-cache-v1').then(cache => {
+                      cache.add(stream.thumbnail);
+                      if (stream.streamKey) {
+                        cache.add(`/streams/${stream.id}`);
+                      }
+                    });
+                    alert('Стрим сохранён для офлайн-просмотра!');
+                  }
+                }}
+                className="text-white active:scale-95 transition-transform"
+              >
+                <Icon name="Download" size={20} />
+              </Button>
               {isStreamer && (
                 <StreamSettings
                   ttsEnabled={ttsEnabled}
