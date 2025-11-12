@@ -94,32 +94,6 @@ const Index = () => {
     <div className="h-screen w-screen bg-background overflow-hidden relative">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
       
-      <Dialog open={buyDialogOpen} onOpenChange={setBuyDialogOpen}>
-        <AppHeader
-          userBoombucks={userBoombucks}
-          notifications={notifications}
-          onMarkAsRead={handleMarkAsRead}
-          onMarkAllAsRead={handleMarkAllAsRead}
-          onClearAll={handleClearAllNotifications}
-          onAdminClick={() => setShowAdminLogin(true)}
-        />
-        
-        <BuyBoombucksDialog
-          open={buyDialogOpen}
-          onOpenChange={setBuyDialogOpen}
-          userBoombucks={userBoombucks}
-          selectedCurrency={selectedCurrency}
-          setSelectedCurrency={setSelectedCurrency}
-          buyAmount={buyAmount}
-          setBuyAmount={setBuyAmount}
-          exchangeRates={exchangeRates}
-          calculateBoombucks={calculateBoombucks}
-          onBuyBoombucks={handleBuyBoombucks}
-          cryptoWallet={cryptoWallet}
-          phoneNumber={phoneNumber}
-        />
-      </Dialog>
-
       {!user ? (
         <div className="flex items-center justify-center min-h-screen">
           {authMode === 'login' ? (
@@ -161,16 +135,44 @@ const Index = () => {
           currentUserId={1}
         />
       ) : (
-        <div className="h-full w-full flex items-center justify-center pt-20 pb-24">
-          <VideoCard 
-            video={video}
-            liked={liked}
-            setLiked={setLiked}
-            handleSwipe={handleSwipe}
-            userBoombucks={userBoombucks}
-            setUserBoombucks={setUserBoombucks}
-          />
-        </div>
+        <>
+          <Dialog open={buyDialogOpen} onOpenChange={setBuyDialogOpen}>
+            <AppHeader
+              userBoombucks={userBoombucks}
+              notifications={notifications}
+              onMarkAsRead={handleMarkAsRead}
+              onMarkAllAsRead={handleMarkAllAsRead}
+              onClearAll={handleClearAllNotifications}
+              onAdminClick={() => setShowAdminLogin(true)}
+            />
+            
+            <BuyBoombucksDialog
+              open={buyDialogOpen}
+              onOpenChange={setBuyDialogOpen}
+              userBoombucks={userBoombucks}
+              selectedCurrency={selectedCurrency}
+              setSelectedCurrency={setSelectedCurrency}
+              buyAmount={buyAmount}
+              setBuyAmount={setBuyAmount}
+              exchangeRates={exchangeRates}
+              calculateBoombucks={calculateBoombucks}
+              onBuyBoombucks={handleBuyBoombucks}
+              cryptoWallet={cryptoWallet}
+              phoneNumber={phoneNumber}
+            />
+          </Dialog>
+          
+          <div className="h-full w-full flex items-center justify-center pt-20 pb-24">
+            <VideoCard 
+              video={video}
+              liked={liked}
+              setLiked={setLiked}
+              handleSwipe={handleSwipe}
+              userBoombucks={userBoombucks}
+              setUserBoombucks={setUserBoombucks}
+            />
+          </div>
+        </>
       )}
 
       {user && (
