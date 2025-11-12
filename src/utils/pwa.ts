@@ -10,15 +10,25 @@ export const registerServiceWorker = async () => {
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('New version available! Refresh to update.');
+              if (confirm('Доступна новая версия приложения! Обновить сейчас?')) {
+                window.location.reload();
+              }
             }
           });
         }
       });
 
-      console.log('Service Worker registered successfully');
+      window.addEventListener('online', () => {
+        console.log('Онлайн режим восстановлен');
+      });
+
+      window.addEventListener('offline', () => {
+        console.log('Офлайн режим активирован');
+      });
+
+      console.log('Service Worker зарегистрирован');
     } catch (error) {
-      console.error('Service Worker registration failed:', error);
+      console.error('Ошибка регистрации Service Worker:', error);
     }
   }
 };

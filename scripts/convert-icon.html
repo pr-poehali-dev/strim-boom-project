@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Converter</title>
+</head>
+<body>
+    <h1>Convert Icon to PNG</h1>
+    <input type="file" id="input" accept="image/*">
+    <br><br>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    <br><br>
+    <button id="download192">Download 192x192 PNG</button>
+    <button id="download192mask">Download 192x192 Maskable PNG</button>
+    <button id="download512">Download 512x512 PNG</button>
+    <button id="download512mask">Download 512x512 Maskable PNG</button>
+
+    <script>
+        const input = document.getElementById('input');
+        const canvas192 = document.getElementById('canvas192');
+        const canvas512 = document.getElementById('canvas512');
+        const ctx192 = canvas192.getContext('2d');
+        const ctx512 = canvas512.getContext('2d');
+        let img = null;
+
+        input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                img = new Image();
+                img.onload = () => {
+                    // Draw 192x192
+                    ctx192.fillStyle = '#8b5cf6';
+                    ctx192.fillRect(0, 0, 192, 192);
+                    ctx192.drawImage(img, 0, 0, 192, 192);
+                    
+                    // Draw 512x512
+                    ctx512.fillStyle = '#8b5cf6';
+                    ctx512.fillRect(0, 0, 512, 512);
+                    ctx512.drawImage(img, 0, 0, 512, 512);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function createMaskable(canvas, size) {
+            const maskCanvas = document.createElement('canvas');
+            maskCanvas.width = size;
+            maskCanvas.height = size;
+            const maskCtx = maskCanvas.getContext('2d');
+            
+            // Purple background
+            maskCtx.fillStyle = '#8b5cf6';
+            maskCtx.fillRect(0, 0, size, size);
+            
+            // Draw icon smaller (80% safe zone for maskable)
+            const iconSize = size * 0.8;
+            const offset = size * 0.1;
+            maskCtx.drawImage(canvas, offset, offset, iconSize, iconSize);
+            
+            return maskCanvas;
+        }
+
+        document.getElementById('download192').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'icon-192.png';
+            link.href = canvas192.toDataURL('image/png');
+            link.click();
+        });
+
+        document.getElementById('download192mask').addEventListener('click', () => {
+            const maskCanvas = createMaskable(canvas192, 192);
+            const link = document.createElement('a');
+            link.download = 'icon-192-maskable.png';
+            link.href = maskCanvas.toDataURL('image/png');
+            link.click();
+        });
+
+        document.getElementById('download512').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'icon-512.png';
+            link.href = canvas512.toDataURL('image/png');
+            link.click();
+        });
+
+        document.getElementById('download512mask').addEventListener('click', () => {
+            const maskCanvas = createMaskable(canvas512, 512);
+            const link = document.createElement('a');
+            link.download = 'icon-512-maskable.png';
+            link.href = maskCanvas.toDataURL('image/png');
+            link.click();
+        });
+    </script>
+</body>
+</html>
