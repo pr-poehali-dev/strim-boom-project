@@ -136,6 +136,66 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 })
             }
         
+        elif action == 'update_profile':
+            email = body_data.get('email')
+            username = body_data.get('username')
+            avatar = body_data.get('avatar')
+            
+            if not email:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Email required'})
+                }
+            
+            update_fields = []
+            params = []
+            
+            if username:
+                update_fields.append('username = %s')
+                params.append(username)
+            
+            if avatar:
+                update_fields.append('avatar = %s')
+                params.append(avatar)
+            
+            if not update_fields:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'No fields to update'})
+                }
+            
+            params.append(email)
+            
+            cur.execute(
+                f"UPDATE t_p37705306_strim_boom_project.users SET {', '.join(update_fields)} WHERE email = %s RETURNING id, username, email, avatar, boombucks",
+                tuple(params)
+            )
+            user = cur.fetchone()
+            conn.commit()
+            
+            if not user:
+                return {
+                    'statusCode': 404,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'User not found'})
+                }
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'user': {
+                        'id': user[0],
+                        'username': user[1],
+                        'email': user[2],
+                        'avatar': user[3],
+                        'boombucks': user[4]
+                    }
+                })
+            }
+        
         else:
             return {
                 'statusCode': 400,

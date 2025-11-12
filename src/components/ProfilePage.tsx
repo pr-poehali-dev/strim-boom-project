@@ -13,6 +13,7 @@ import { ReferralTab } from './profile/ReferralTab';
 import { ReferralSimulator } from './ReferralSimulator';
 import { PaymentInstructions } from './PaymentInstructions';
 import { LiveStreamBroadcaster } from './stream/LiveStreamBroadcaster';
+import { EditProfileDialog } from './profile/EditProfileDialog';
 
 interface ProfilePageProps {
   userBoombucks: number;
@@ -35,6 +36,9 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const username = user.username || 'username';
   const avatar = user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user';
+  const userEmail = user.email || '';
+  
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
   
   const totalReferralEarnings = referrals.filter(r => r.status === 'rewarded').reduce((sum, r) => sum + r.rewardEarned, 0);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
@@ -91,15 +95,25 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
   return (
     <div className="h-full w-full pt-20 pb-24 px-4 overflow-y-auto">
       <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Avatar className="h-20 w-20 border-4 border-primary">
-            <AvatarImage src={avatar} />
-            <AvatarFallback>{username[0]?.toUpperCase() || 'U'}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-2xl font-bold text-white">@{username}</h1>
-            <p className="text-muted-foreground">Content Creator</p>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-20 w-20 border-4 border-primary">
+              <AvatarImage src={avatar} />
+              <AvatarFallback>{username[0]?.toUpperCase() || 'U'}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-2xl font-bold text-white">@{username}</h1>
+              <p className="text-muted-foreground">Content Creator</p>
+            </div>
           </div>
+          
+          <button
+            onClick={() => setEditProfileOpen(true)}
+            className="px-4 py-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors flex items-center gap-2"
+          >
+            <Icon name="Pencil" size={16} />
+            Редактировать
+          </button>
         </div>
 
         <Card className="bg-card/50 backdrop-blur-lg border-primary/30 p-6">
@@ -192,6 +206,14 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
           </TabsContent>
         </Tabs>
       </div>
+
+      <EditProfileDialog
+        open={editProfileOpen}
+        onOpenChange={setEditProfileOpen}
+        currentUsername={username}
+        currentAvatar={avatar}
+        userEmail={userEmail}
+      />
     </div>
   );
 });

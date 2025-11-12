@@ -60,6 +60,15 @@ export const authAPI = {
       body: JSON.stringify({ action: 'login', email, password })
     });
     return response.json();
+  },
+
+  updateProfile: async (email: string, username?: string, avatar?: string) => {
+    const response = await fetch(API_URLS.auth, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update_profile', email, username, avatar })
+    });
+    return response.json();
   }
 };
 
