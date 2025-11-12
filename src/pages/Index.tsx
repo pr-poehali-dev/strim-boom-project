@@ -9,7 +9,7 @@ import { AdminLogin } from '@/components/AdminLogin';
 import { AdminPanel } from '@/components/AdminPanel';
 import { AppHeader } from '@/components/home/AppHeader';
 import { BuyBoombucksDialog } from '@/components/home/BuyBoombucksDialog';
-import { StreamView } from '@/components/stream/StreamView';
+import { StreamViewWithSwipe } from '@/components/stream/StreamViewWithSwipe';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { RegisterForm } from '@/components/auth/RegisterForm';
 import { CreateStreamDialog } from '@/components/stream/CreateStreamDialog';
@@ -194,8 +194,9 @@ const Index = () => {
       )}
 
       {selectedStream && (
-        <StreamView
+        <StreamViewWithSwipe
           stream={selectedStream}
+          allStreams={streams.length > 0 ? streams : mockStreams}
           userBoombucks={userBoombucks}
           setUserBoombucks={setUserBoombucks}
           isStreamer={false}
