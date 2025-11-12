@@ -32,6 +32,10 @@ interface PaymentMethod {
 }
 
 export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions, setTransactions, referrals, userId, onSimulateReferralPurchase, referralCode }: ProfilePageProps) => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const username = user.username || 'username';
+  const avatar = user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user';
+  
   const totalReferralEarnings = referrals.filter(r => r.status === 'rewarded').reduce((sum, r) => sum + r.rewardEarned, 0);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     { type: 'card', value: '', label: 'Bank Card (RU)' },
@@ -89,11 +93,11 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center gap-4 mb-6">
           <Avatar className="h-20 w-20 border-4 border-primary">
-            <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarImage src={avatar} />
+            <AvatarFallback>{username[0]?.toUpperCase() || 'U'}</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-2xl font-bold text-white">@username</h1>
+            <h1 className="text-2xl font-bold text-white">@{username}</h1>
             <p className="text-muted-foreground">Content Creator</p>
           </div>
         </div>
@@ -116,10 +120,20 @@ export const ProfilePage = memo(({ userBoombucks, setUserBoombucks, transactions
                   Active
                 </Badge>
                 <div className="flex gap-2">
-                  <LiveStreamBroadcaster userId={userId} username="username" />
+                  <LiveStreamBroadcaster userId={userId} username={username} />
                   <ReferralSimulator onSimulatePurchase={onSimulateReferralPurchase} />
                   <PaymentInstructions />
                 </div>
+                <button
+                  onClick={() => {
+                    localStorage.clear();
+                    window.location.reload();
+                  }}
+                  className="mt-2 px-4 py-2 bg-destructive/20 text-destructive rounded-lg hover:bg-destructive/30 transition-colors flex items-center gap-2"
+                >
+                  <Icon name="LogOut" size={16} />
+                  Выйти
+                </button>
               </div>
             </div>
           </div>

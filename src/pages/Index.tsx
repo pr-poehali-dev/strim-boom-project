@@ -108,32 +108,6 @@ const Index = () => {
             />
           )}
         </div>
-      ) : activeTab === 'streams' ? (
-        <StreamsList 
-          streams={streams.length > 0 ? streams : mockStreams} 
-          onStreamClick={setSelectedStream}
-        />
-      ) : activeTab === 'profile' ? (
-        <ProfilePage 
-          userBoombucks={userBoombucks}
-          setUserBoombucks={setUserBoombucks}
-          transactions={transactions}
-          setTransactions={setTransactions}
-          referrals={referrals}
-          userId={currentUserId}
-          onSimulateReferralPurchase={handleReferralPurchase}
-          referralCode={referralCode}
-        />
-      ) : activeTab === 'ads' ? (
-        <AdvertisingMarketplace 
-          userBoombucks={userBoombucks}
-          setUserBoombucks={setUserBoombucks}
-          transactions={transactions}
-          setTransactions={setTransactions}
-          notifications={notifications}
-          setNotifications={setNotifications}
-          currentUserId={1}
-        />
       ) : (
         <>
           <Dialog open={buyDialogOpen} onOpenChange={setBuyDialogOpen}>
@@ -161,17 +135,45 @@ const Index = () => {
               phoneNumber={phoneNumber}
             />
           </Dialog>
-          
-          <div className="h-full w-full flex items-center justify-center pt-20 pb-24">
-            <VideoCard 
-              video={video}
-              liked={liked}
-              setLiked={setLiked}
-              handleSwipe={handleSwipe}
+
+          {activeTab === 'streams' ? (
+            <StreamsList 
+              streams={streams.length > 0 ? streams : mockStreams} 
+              onStreamClick={setSelectedStream}
+            />
+          ) : activeTab === 'profile' ? (
+            <ProfilePage 
               userBoombucks={userBoombucks}
               setUserBoombucks={setUserBoombucks}
+              transactions={transactions}
+              setTransactions={setTransactions}
+              referrals={referrals}
+              userId={currentUserId}
+              onSimulateReferralPurchase={handleReferralPurchase}
+              referralCode={referralCode}
             />
-          </div>
+          ) : activeTab === 'ads' ? (
+            <AdvertisingMarketplace 
+              userBoombucks={userBoombucks}
+              setUserBoombucks={setUserBoombucks}
+              transactions={transactions}
+              setTransactions={setTransactions}
+              notifications={notifications}
+              setNotifications={setNotifications}
+              currentUserId={1}
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center pt-20 pb-24">
+              <VideoCard 
+                video={video}
+                liked={liked}
+                setLiked={setLiked}
+                handleSwipe={handleSwipe}
+                userBoombucks={userBoombucks}
+                setUserBoombucks={setUserBoombucks}
+              />
+            </div>
+          )}
         </>
       )}
 
