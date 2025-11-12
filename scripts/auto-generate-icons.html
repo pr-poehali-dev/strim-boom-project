@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auto Icon Generator</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 40px; 
+            background: #0a0a0a; 
+            color: white;
+            text-align: center;
+        }
+        .status { 
+            font-size: 24px; 
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 2px solid #8b5cf6;
+            border-radius: 10px;
+        }
+        .progress { 
+            margin: 20px 0; 
+            font-size: 18px;
+            color: #8b5cf6;
+        }
+        canvas { 
+            display: none; 
+        }
+        .checkmark {
+            color: #10b981;
+            font-size: 48px;
+            margin: 20px 0;
+        }
+        .instructions {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid #3b82f6;
+            border-radius: 10px;
+            text-align: left;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 STREAM BOOM - Auto Icon Generator</h1>
+    <div class="status" id="status">Инициализация...</div>
+    <div class="progress" id="progress"></div>
+    
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+
+    <div class="instructions" id="instructions" style="display: none;">
+        <h3>✅ Иконки сгенерированы и скачаны!</h3>
+        <div class="step">📁 Шаг 1: Найдите 4 скачанных PNG файла в папке загрузок</div>
+        <div class="step">📂 Шаг 2: Переместите их в папку <code>/public/</code> вашего проекта</div>
+        <div class="step">🔄 Шаг 3: Подтвердите замену существующих файлов</div>
+        <div class="step">🎉 Шаг 4: Пересоберите проект - все ошибки PWA исчезнут!</div>
+    </div>
+
+    <script>
+        const LOGO_URL = 'https://cdn.poehali.dev/files/8af0fa73-0b2f-4c2d-ad5e-cdc9818bab3c.jpg';
+        const canvas192 = document.getElementById('canvas192');
+        const canvas512 = document.getElementById('canvas512');
+        const ctx192 = canvas192.getContext('2d');
+        const ctx512 = canvas512.getContext('2d');
+        const statusEl = document.getElementById('status');
+        const progressEl = document.getElementById('progress');
+        const instructionsEl = document.getElementById('instructions');
+
+        const configs = [
+            { canvas: canvas192, size: 192, name: 'icon-192.png', maskable: false },
+            { canvas: canvas192, size: 192, name: 'icon-192-maskable.png', maskable: true },
+            { canvas: canvas512, size: 512, name: 'icon-512.png', maskable: false },
+            { canvas: canvas512, size: 512, name: 'icon-512-maskable.png', maskable: true }
+        ];
+
+        async function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function updateStatus(message) {
+            statusEl.textContent = message;
+        }
+
+        function updateProgress(message) {
+            progressEl.textContent = message;
+        }
+
+        function drawIcon(ctx, image, size, maskable) {
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, size, size);
+
+            if (maskable) {
+                const iconSize = size * 0.8;
+                const offset = size * 0.1;
+                ctx.drawImage(image, offset, offset, iconSize, iconSize);
+            } else {
+                ctx.drawImage(image, 0, 0, size, size);
+            }
+        }
+
+        function downloadCanvas(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        async function generateIcons() {
+            try {
+                updateStatus('Загрузка логотипа STREAM BOOM...');
+                await sleep(500);
+
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                    img.src = LOGO_URL;
+                });
+
+                updateStatus('Генерация иконок...');
+                await sleep(500);
+
+                for (let i = 0; i < configs.length; i++) {
+                    const config = configs[i];
+                    updateProgress(`Генерация ${i + 1}/4: ${config.name}`);
+                    
+                    const canvas = config.size === 192 ? canvas192 : canvas512;
+                    const ctx = canvas.getContext('2d');
+                    
+                    drawIcon(ctx, img, config.size, config.maskable);
+                    await sleep(300);
+                    
+                    downloadCanvas(canvas, config.name);
+                    await sleep(500);
+                }
+
+                updateStatus('🎉 Готово! Все иконки скачаны!');
+                updateProgress('');
+                instructionsEl.style.display = 'block';
+
+            } catch (error) {
+                updateStatus('❌ Ошибка: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(generateIcons, 1000);
+        });
+    </script>
+</body>
+</html>
