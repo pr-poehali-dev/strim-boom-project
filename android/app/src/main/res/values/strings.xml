@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">StreamBoom</string>
+    <string name="title_activity_main">StreamBoom</string>
+    <string name="package_name">com.streamboom.app</string>
+    <string name="custom_url_scheme">com.streamboom.app</string>
+</resources>
