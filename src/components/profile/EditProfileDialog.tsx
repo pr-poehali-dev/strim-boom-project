@@ -24,6 +24,9 @@ export const EditProfileDialog = ({ open, onOpenChange, currentUsername, current
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [cropEditorOpen, setCropEditorOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
   const { toast } = useToast();
 
   const handleSave = async () => {
@@ -125,6 +128,57 @@ export const EditProfileDialog = ({ open, onOpenChange, currentUsername, current
     }
   };
 
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' } 
+      });
+      setStream(mediaStream);
+      setShowCamera(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось получить доступ к камере',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setShowCamera(false);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext('2d');
+    
+    if (ctx) {
+      ctx.drawImage(videoRef.current, 0, 0);
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            setSelectedImage(reader.result as string);
+            setCropEditorOpen(true);
+            stopCamera();
+          };
+          reader.readAsDataURL(blob);
+        }
+      }, 'image/jpeg', 0.95);
+    }
+  };
+
   return (
     <>
       {selectedImage && (
@@ -152,38 +206,81 @@ export const EditProfileDialog = ({ open, onOpenChange, currentUsername, current
               <AvatarFallback>{username[0]?.toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
             
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading || loading}
-                className="gap-2"
-              >
-                {uploading ? (
-                  <>
-                    <Icon name="Loader2" size={16} className="animate-spin" />
-                    Загрузка...
-                  </>
-                ) : (
-                  <>
-                    <Icon name="Upload" size={16} />
-                    Загрузить фото
-                  </>
-                )}
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={generateRandomAvatar}
+            {showCamera ? (
+              <div className="space-y-4 w-full">
+                <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    variant="default"
+                    onClick={capturePhoto}
+                    className="gap-2"
+                  >
+                    <Icon name="Camera" size={16} />
+                    Сделать фото
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={stopCamera}
+                    className="gap-2"
+                  >
+                    <Icon name="X" size={16} />
+                    Отмена
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-2 flex-wrap justify-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={startCamera}
+                  disabled={uploading || loading}
+                  className="gap-2"
+                >
+                  <Icon name="Camera" size={16} />
+                  Камера
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading || loading}
+                  className="gap-2"
+                >
+                  {uploading ? (
+                    <>
+                      <Icon name="Loader2" size={16} className="animate-spin" />
+                      Загрузка...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="Upload" size={16} />
+                      Галерея
+                    </>
+                  )}
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={generateRandomAvatar}
                 disabled={uploading || loading}
                 className="gap-2"
               >
                 <Icon name="Shuffle" size={16} />
                 Случайный
               </Button>
-            </div>
+              </div>
+            )}
             
             <input
               ref={fileInputRef}
