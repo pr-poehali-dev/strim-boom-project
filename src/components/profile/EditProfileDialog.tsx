@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { authAPI, uploadAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
+import { ImageCropEditor } from './ImageCropEditor';
 
 interface EditProfileDialogProps {
   open: boolean;
@@ -20,6 +21,8 @@ export const EditProfileDialog = ({ open, onOpenChange, currentUsername, current
   const [avatarUrl, setAvatarUrl] = useState(currentAvatar);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [cropEditorOpen, setCropEditorOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -71,7 +74,7 @@ export const EditProfileDialog = ({ open, onOpenChange, currentUsername, current
     setAvatarUrl(`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`);
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -93,13 +96,23 @@ export const EditProfileDialog = ({ open, onOpenChange, currentUsername, current
       return;
     }
 
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSelectedImage(reader.result as string);
+      setCropEditorOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (croppedImageBlob: Blob) => {
     setUploading(true);
     try {
+      const file = new File([croppedImageBlob], 'avatar.jpg', { type: 'image/jpeg' });
       const result = await uploadAPI.uploadImage(file);
       setAvatarUrl(result.url);
       toast({
         title: 'Успешно!',
-        description: 'Изображение загружено'
+        description: 'Фото обработано и загружено'
       });
     } catch (error) {
       toast({
@@ -113,7 +126,17 @@ export const EditProfileDialog = ({ open, onOpenChange, currentUsername, current
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      {selectedImage && (
+        <ImageCropEditor
+          open={cropEditorOpen}
+          onOpenChange={setCropEditorOpen}
+          imageUrl={selectedImage}
+          onCropComplete={handleCropComplete}
+        />
+      )}
+
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card/95 backdrop-blur-lg border-primary/30">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
@@ -220,5 +243,6 @@ export const EditProfileDialog = ({ open, onOpenChange, currentUsername, current
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
