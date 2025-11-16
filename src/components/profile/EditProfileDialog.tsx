@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { authAPI } from '@/lib/api';
+import { authAPI, uploadAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
@@ -19,6 +19,8 @@ export const EditProfileDialog = ({ open, onOpenChange, currentUsername, current
   const [username, setUsername] = useState(currentUsername);
   const [avatarUrl, setAvatarUrl] = useState(currentAvatar);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleSave = async () => {
@@ -69,6 +71,47 @@ export const EditProfileDialog = ({ open, onOpenChange, currentUsername, current
     setAvatarUrl(`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`);
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Ошибка',
+        description: 'Пожалуйста, выберите изображение',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'Ошибка',
+        description: 'Файл слишком большой. Максимум 5 МБ',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const result = await uploadAPI.uploadImage(file);
+      setAvatarUrl(result.url);
+      toast({
+        title: 'Успешно!',
+        description: 'Изображение загружено'
+      });
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось загрузить изображение',
+        variant: 'destructive'
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card/95 backdrop-blur-lg border-primary/30">
@@ -86,15 +129,46 @@ export const EditProfileDialog = ({ open, onOpenChange, currentUsername, current
               <AvatarFallback>{username[0]?.toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
             
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={generateRandomAvatar}
-              className="gap-2"
-            >
-              <Icon name="Shuffle" size={16} />
-              Случайный аватар
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || loading}
+                className="gap-2"
+              >
+                {uploading ? (
+                  <>
+                    <Icon name="Loader2" size={16} className="animate-spin" />
+                    Загрузка...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Upload" size={16} />
+                    Загрузить фото
+                  </>
+                )}
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={generateRandomAvatar}
+                disabled={uploading || loading}
+                className="gap-2"
+              >
+                <Icon name="Shuffle" size={16} />
+                Случайный
+              </Button>
+            </div>
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
           </div>
 
           <div className="space-y-2">

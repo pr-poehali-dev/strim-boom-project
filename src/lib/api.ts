@@ -2,7 +2,8 @@ const API_URLS = {
   auth: 'https://functions.poehali.dev/a9383ee1-ee25-4a83-a066-7f3e8b8c9fac',
   streams: 'https://functions.poehali.dev/daff0434-9d18-4277-8d13-6fe57cf35ba0',
   chat: 'https://functions.poehali.dev/2b97607d-7104-44d4-a96c-c9e1df117443',
-  donations: 'https://functions.poehali.dev/32dd2c72-b316-4678-907d-c315427d7b66'
+  donations: 'https://functions.poehali.dev/32dd2c72-b316-4678-907d-c315427d7b66',
+  uploadImage: 'https://functions.poehali.dev/b63e1f86-e77a-4fff-9871-a16f2ad101af'
 };
 
 export interface User {
@@ -69,6 +70,37 @@ export const authAPI = {
       body: JSON.stringify({ action: 'update_profile', email, username, avatar })
     });
     return response.json();
+  }
+};
+
+export const uploadAPI = {
+  uploadImage: async (imageFile: File): Promise<{ url: string; filename: string }> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64 = reader.result as string;
+          const response = await fetch(API_URLS.uploadImage, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              image: base64,
+              filename: imageFile.name
+            })
+          });
+          const data = await response.json();
+          if (data.error) {
+            reject(new Error(data.error));
+          } else {
+            resolve(data);
+          }
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(imageFile);
+    });
   }
 };
 
