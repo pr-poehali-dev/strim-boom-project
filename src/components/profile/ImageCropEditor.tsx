@@ -33,7 +33,8 @@ const getCroppedImg = async (
   rotation = 0,
   brightness = 100,
   contrast = 100,
-  saturation = 100
+  saturation = 100,
+  filterPreset = 'none'
 ): Promise<Blob> => {
   const image = await createImage(imageSrc);
   const canvas = document.createElement('canvas');
@@ -70,7 +71,23 @@ const getCroppedImg = async (
     Math.round(0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y)
   );
 
-  ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+  let filterString = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+  
+  if (filterPreset === 'grayscale') {
+    filterString += ' grayscale(100%)';
+  } else if (filterPreset === 'sepia') {
+    filterString += ' sepia(80%)';
+  } else if (filterPreset === 'vintage') {
+    filterString += ' sepia(40%) contrast(110%) brightness(95%)';
+  } else if (filterPreset === 'dramatic') {
+    filterString += ' contrast(140%) saturate(130%) brightness(90%)';
+  } else if (filterPreset === 'cool') {
+    filterString += ' hue-rotate(180deg) saturate(120%)';
+  } else if (filterPreset === 'warm') {
+    filterString += ' sepia(20%) saturate(120%) brightness(105%)';
+  }
+  
+  ctx.filter = filterString;
   ctx.drawImage(canvas, 0, 0);
 
   return new Promise((resolve) => {
@@ -82,6 +99,18 @@ const getCroppedImg = async (
   });
 };
 
+type FilterPreset = 'none' | 'grayscale' | 'sepia' | 'vintage' | 'dramatic' | 'cool' | 'warm';
+
+const filterPresets: { name: string; value: FilterPreset; icon: string }[] = [
+  { name: 'Оригинал', value: 'none', icon: 'ImageOff' },
+  { name: 'Ч/Б', value: 'grayscale', icon: 'Moon' },
+  { name: 'Сепия', value: 'sepia', icon: 'Film' },
+  { name: 'Винтаж', value: 'vintage', icon: 'Camera' },
+  { name: 'Драма', value: 'dramatic', icon: 'Zap' },
+  { name: 'Холод', value: 'cool', icon: 'Snowflake' },
+  { name: 'Тепло', value: 'warm', icon: 'Flame' },
+];
+
 export const ImageCropEditor = ({ open, onOpenChange, imageUrl, onCropComplete }: ImageCropEditorProps) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -89,6 +118,7 @@ export const ImageCropEditor = ({ open, onOpenChange, imageUrl, onCropComplete }
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
   const [saturation, setSaturation] = useState(100);
+  const [filterPreset, setFilterPreset] = useState<FilterPreset>('none');
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -115,7 +145,8 @@ export const ImageCropEditor = ({ open, onOpenChange, imageUrl, onCropComplete }
         rotation,
         brightness,
         contrast,
-        saturation
+        saturation,
+        filterPreset
       );
       onCropComplete(croppedImage);
       onOpenChange(false);
@@ -132,6 +163,16 @@ export const ImageCropEditor = ({ open, onOpenChange, imageUrl, onCropComplete }
     setContrast(100);
     setSaturation(100);
     setZoom(1);
+    setFilterPreset('none');
+  };
+
+  const applyFilterPreset = (preset: FilterPreset) => {
+    setFilterPreset(preset);
+    if (preset === 'none') {
+      setBrightness(100);
+      setContrast(100);
+      setSaturation(100);
+    }
   };
 
   return (
@@ -145,6 +186,21 @@ export const ImageCropEditor = ({ open, onOpenChange, imageUrl, onCropComplete }
         </DialogHeader>
 
         <div className="space-y-4">
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {filterPresets.map((preset) => (
+              <Button
+                key={preset.value}
+                variant={filterPreset === preset.value ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => applyFilterPreset(preset.value)}
+                className="flex-shrink-0 gap-1 text-xs"
+              >
+                <Icon name={preset.icon as any} size={14} />
+                {preset.name}
+              </Button>
+            ))}
+          </div>
+
           <div className="relative h-96 bg-black/50 rounded-lg overflow-hidden">
             <Cropper
               image={imageUrl}
@@ -157,7 +213,21 @@ export const ImageCropEditor = ({ open, onOpenChange, imageUrl, onCropComplete }
               onCropComplete={onCropAreaChange}
               style={{
                 containerStyle: {
-                  filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
+                  filter: filterPreset === 'none' 
+                    ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
+                    : filterPreset === 'grayscale'
+                    ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) grayscale(100%)`
+                    : filterPreset === 'sepia'
+                    ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) sepia(80%)`
+                    : filterPreset === 'vintage'
+                    ? `sepia(40%) contrast(110%) brightness(95%)`
+                    : filterPreset === 'dramatic'
+                    ? `contrast(140%) saturate(130%) brightness(90%)`
+                    : filterPreset === 'cool'
+                    ? `hue-rotate(180deg) saturate(120%)`
+                    : filterPreset === 'warm'
+                    ? `sepia(20%) saturate(120%) brightness(105%)`
+                    : `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
                 }
               }}
             />
