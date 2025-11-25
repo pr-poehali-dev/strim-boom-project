@@ -14,6 +14,8 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  
+  console.log('LoginForm rendered, loading:', loading);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,10 +33,21 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
     try {
       const result = await authAPI.login(email, password);
       
+      console.log('Login result:', result);
+      
       if (result.error) {
         toast({
           title: 'Ошибка входа',
           description: result.error,
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      if (!result.user || !result.token) {
+        toast({
+          title: 'Ошибка',
+          description: 'Неверный формат ответа сервера',
           variant: 'destructive'
         });
         return;
@@ -50,9 +63,10 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
       
       onSuccess(result.user);
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: 'Ошибка',
-        description: 'Не удалось войти. Проверьте данные.',
+        description: error instanceof Error ? error.message : 'Не удалось войти. Проверьте данные.',
         variant: 'destructive'
       });
     } finally {
@@ -73,7 +87,8 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
             disabled={loading}
-            className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-12"
+            autoComplete="email"
+            className="bg-white/20 border-2 border-white/40 text-white placeholder:text-white/60 h-12 focus:border-primary focus:bg-white/30"
           />
         </div>
 
@@ -85,13 +100,14 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             disabled={loading}
-            className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-12"
+            autoComplete="current-password"
+            className="bg-white/20 border-2 border-white/40 text-white placeholder:text-white/60 h-12 focus:border-primary focus:bg-white/30"
           />
         </div>
 
         <Button 
           type="submit" 
-          className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-semibold text-lg" 
+          className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-semibold text-lg shadow-lg shadow-primary/50 transition-all" 
           disabled={loading}
         >
           {loading ? 'Вход...' : 'Войти'}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Auth</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Auth Backend</h1>
+    
+    <h2>Register</h2>
+    <input type="text" id="reg-username" placeholder="Username" value="testuser2">
+    <input type="email" id="reg-email" placeholder="Email" value="test2@example.com">
+    <input type="password" id="reg-password" placeholder="Password" value="password123">
+    <button onclick="testRegister()">Register</button>
+    
+    <h2>Login</h2>
+    <input type="email" id="login-email" placeholder="Email" value="test@example.com">
+    <input type="password" id="login-password" placeholder="Password" value="password123">
+    <button onclick="testLogin()">Login</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        const AUTH_URL = 'https://functions.poehali.dev/a9383ee1-ee25-4a83-a066-7f3e8b8c9fac';
+        
+        async function testRegister() {
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            
+            try {
+                const response = await fetch(AUTH_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'register',
+                        username,
+                        email,
+                        password
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').textContent = 
+                    'Register Response:\n' + JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('result').textContent = 
+                    'Register Error:\n' + error.message;
+            }
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                const response = await fetch(AUTH_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'login',
+                        email,
+                        password
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').textContent = 
+                    'Login Response:\n' + JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('result').textContent = 
+                    'Login Error:\n' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

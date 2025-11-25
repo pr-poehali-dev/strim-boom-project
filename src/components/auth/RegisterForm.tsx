@@ -41,10 +41,21 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
     try {
       const result = await authAPI.register(username, email, password);
       
+      console.log('Register result:', result);
+      
       if (result.error) {
         toast({
           title: 'Ошибка регистрации',
           description: result.error,
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      if (!result.user || !result.token) {
+        toast({
+          title: 'Ошибка',
+          description: 'Неверный формат ответа сервера',
           variant: 'destructive'
         });
         return;
@@ -60,9 +71,10 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
       
       onSuccess(result.user);
     } catch (error) {
+      console.error('Registration error:', error);
       toast({
         title: 'Ошибка',
-        description: 'Не удалось зарегистрироваться. Попробуйте снова.',
+        description: error instanceof Error ? error.message : 'Не удалось зарегистрироваться. Попробуйте снова.',
         variant: 'destructive'
       });
     } finally {
@@ -83,7 +95,8 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
             onChange={(e) => setUsername(e.target.value)}
             placeholder="@username"
             disabled={loading}
-            className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-12"
+            autoComplete="username"
+            className="bg-white/20 border-2 border-white/40 text-white placeholder:text-white/60 h-12 focus:border-primary focus:bg-white/30"
           />
         </div>
 
@@ -95,7 +108,8 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
             disabled={loading}
-            className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-12"
+            autoComplete="email"
+            className="bg-white/20 border-2 border-white/40 text-white placeholder:text-white/60 h-12 focus:border-primary focus:bg-white/30"
           />
         </div>
 
@@ -107,13 +121,14 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             disabled={loading}
-            className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-12"
+            autoComplete="new-password"
+            className="bg-white/20 border-2 border-white/40 text-white placeholder:text-white/60 h-12 focus:border-primary focus:bg-white/30"
           />
         </div>
 
         <Button 
           type="submit" 
-          className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-semibold text-lg" 
+          className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-semibold text-lg shadow-lg shadow-primary/50 transition-all" 
           disabled={loading}
         >
           {loading ? 'Регистрация...' : 'Зарегистрироваться'}

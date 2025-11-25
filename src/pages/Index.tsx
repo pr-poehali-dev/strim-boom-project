@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Dialog } from '@/components/ui/dialog';
 import { VideoCard } from '@/components/VideoCard';
 import { StreamsList } from '@/components/StreamsList';
 import { BottomNavigation } from '@/components/BottomNavigation';
@@ -92,10 +91,10 @@ const Index = () => {
 
   return (
     <div className="h-screen w-screen bg-background overflow-hidden relative">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background -z-10" />
       
       {!user ? (
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-screen relative z-10 px-4">
           {authMode === 'login' ? (
             <LoginForm 
               onSuccess={(userData) => setUser(userData)}
@@ -110,31 +109,29 @@ const Index = () => {
         </div>
       ) : (
         <>
-          <Dialog open={buyDialogOpen} onOpenChange={setBuyDialogOpen}>
-            <AppHeader
-              userBoombucks={userBoombucks}
-              notifications={notifications}
-              onMarkAsRead={handleMarkAsRead}
-              onMarkAllAsRead={handleMarkAllAsRead}
-              onClearAll={handleClearAllNotifications}
-              onAdminClick={() => setShowAdminLogin(true)}
-            />
-            
-            <BuyBoombucksDialog
-              open={buyDialogOpen}
-              onOpenChange={setBuyDialogOpen}
-              userBoombucks={userBoombucks}
-              selectedCurrency={selectedCurrency}
-              setSelectedCurrency={setSelectedCurrency}
-              buyAmount={buyAmount}
-              setBuyAmount={setBuyAmount}
-              exchangeRates={exchangeRates}
-              calculateBoombucks={calculateBoombucks}
-              onBuyBoombucks={handleBuyBoombucks}
-              cryptoWallet={cryptoWallet}
-              phoneNumber={phoneNumber}
-            />
-          </Dialog>
+          <AppHeader
+            userBoombucks={userBoombucks}
+            notifications={notifications}
+            onMarkAsRead={handleMarkAsRead}
+            onMarkAllAsRead={handleMarkAllAsRead}
+            onClearAll={handleClearAllNotifications}
+            onAdminClick={() => setShowAdminLogin(true)}
+          />
+          
+          <BuyBoombucksDialog
+            open={buyDialogOpen}
+            onOpenChange={setBuyDialogOpen}
+            userBoombucks={userBoombucks}
+            selectedCurrency={selectedCurrency}
+            setSelectedCurrency={setSelectedCurrency}
+            buyAmount={buyAmount}
+            setBuyAmount={setBuyAmount}
+            exchangeRates={exchangeRates}
+            calculateBoombucks={calculateBoombucks}
+            onBuyBoombucks={handleBuyBoombucks}
+            cryptoWallet={cryptoWallet}
+            phoneNumber={phoneNumber}
+          />
 
           {activeTab === 'streams' ? (
             <StreamsList 

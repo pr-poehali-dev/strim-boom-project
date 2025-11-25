@@ -1,9 +1,13 @@
+import funcUrls from '../../backend/func2url.json';
+
 const API_URLS = {
-  auth: 'https://functions.poehali.dev/a9383ee1-ee25-4a83-a066-7f3e8b8c9fac',
-  streams: 'https://functions.poehali.dev/daff0434-9d18-4277-8d13-6fe57cf35ba0',
-  chat: 'https://functions.poehali.dev/2b97607d-7104-44d4-a96c-c9e1df117443',
-  donations: 'https://functions.poehali.dev/32dd2c72-b316-4678-907d-c315427d7b66',
-  uploadImage: 'https://functions.poehali.dev/b63e1f86-e77a-4fff-9871-a16f2ad101af'
+  auth: funcUrls.auth,
+  streams: funcUrls.streams,
+  chat: funcUrls.chat,
+  donations: funcUrls.donations,
+  uploadImage: funcUrls['upload-image'],
+  transactions: funcUrls.transactions,
+  referrals: funcUrls.referrals
 };
 
 export interface User {
@@ -165,6 +169,38 @@ export const donationsAPI = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stream_id: streamId, from_user_id: fromUserId, amount, message })
+    });
+    return response.json();
+  }
+};
+
+export const transactionsAPI = {
+  getTransactions: async (userId: number) => {
+    const response = await fetch(`${API_URLS.transactions}?user_id=${userId}`);
+    return response.json();
+  },
+
+  createTransaction: async (userId: number, type: string, amount: number, currency: string, description: string) => {
+    const response = await fetch(API_URLS.transactions, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, type, amount, currency, description })
+    });
+    return response.json();
+  }
+};
+
+export const referralsAPI = {
+  getReferrals: async (userId: number) => {
+    const response = await fetch(`${API_URLS.referrals}?user_id=${userId}`);
+    return response.json();
+  },
+
+  recordReferral: async (referrerId: number, referredUserId: number, purchaseAmount: number) => {
+    const response = await fetch(API_URLS.referrals, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ referrer_id: referrerId, referred_user_id: referredUserId, purchase_amount: purchaseAmount })
     });
     return response.json();
   }
