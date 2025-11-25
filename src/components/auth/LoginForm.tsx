@@ -61,41 +61,47 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-card rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-center">Вход в Stream-Boom</h2>
+    <div className="w-full max-w-md mx-auto p-8 bg-white/10 backdrop-blur-xl rounded-2xl border-2 border-primary/30 shadow-2xl">
+      <h2 className="text-3xl font-bold mb-8 text-center text-white">Вход в Stream-Boom</h2>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium mb-2">Email</label>
+          <label className="block text-sm font-medium mb-2 text-white">Email</label>
           <Input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
             disabled={loading}
+            className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-12"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Пароль</label>
+          <label className="block text-sm font-medium mb-2 text-white">Пароль</label>
           <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             disabled={loading}
+            className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-12"
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button 
+          type="submit" 
+          className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-semibold text-lg" 
+          disabled={loading}
+        >
           {loading ? 'Вход...' : 'Войти'}
         </Button>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-6 text-center">
         <button
           onClick={onSwitchToRegister}
-          className="text-sm text-primary hover:underline"
+          className="text-sm text-primary hover:text-primary/80 font-medium"
         >
           Нет аккаунта? Зарегистрироваться
         </button>
