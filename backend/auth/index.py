@@ -6,6 +6,10 @@ from typing import Dict, Any
 import psycopg2
 import psycopg2.extras
 
+def escape_sql_string(s: str) -> str:
+    """Экранирует строки для безопасного использования в SQL"""
+    return s.replace("'", "''")
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
     Business: Регистрация и авторизация пользователей
@@ -23,14 +27,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
     
     if method != 'POST':
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Method not allowed'})
+            'body': json.dumps({'error': 'Method not allowed'}),
+            'isBase64Encoded': False
         }
     
     body_data = json.loads(event.get('body', '{}'))
@@ -40,6 +46,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     try:
         conn = psycopg2.connect(database_url)
+        conn.autocommit = True
         cur = conn.cursor()
         
         if action == 'register':
@@ -51,30 +58,32 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Missing required fields'})
+                    'body': json.dumps({'error': 'Missing required fields'}),
+                    'isBase64Encoded': False
                 }
             
+            username = escape_sql_string(username)
+            email = escape_sql_string(email)
             password_hash = hashlib.sha256(password.encode()).hexdigest()
-            avatar = f'https://api.dicebear.com/7.x/avataaars/svg?seed={username}'
+            avatar = f'https://api.dicebear.com/7.x/avataaars/svg?seed={escape_sql_string(username)}'
             
-            cur.execute(
-                "SELECT id FROM t_p37705306_strim_boom_project.users WHERE email = %s",
-                (email,)
-            )
+            cur.execute(f"SELECT id FROM t_p37705306_strim_boom_project.users WHERE email = '{email}'")
             existing_user = cur.fetchone()
             
             if existing_user:
-                cur.execute(
-                    "UPDATE t_p37705306_strim_boom_project.users SET username = %s, password_hash = %s, avatar = %s WHERE email = %s RETURNING id, username, email, avatar, boombucks",
-                    (username, password_hash, avatar, email)
-                )
+                cur.execute(f"""
+                    UPDATE t_p37705306_strim_boom_project.users 
+                    SET username = '{username}', password_hash = '{password_hash}', avatar = '{avatar}' 
+                    WHERE email = '{email}' 
+                    RETURNING id, username, email, avatar, boombucks
+                """)
             else:
-                cur.execute(
-                    "INSERT INTO t_p37705306_strim_boom_project.users (username, email, password_hash, avatar) VALUES (%s, %s, %s, %s) RETURNING id, username, email, avatar, boombucks",
-                    (username, email, password_hash, avatar)
-                )
+                cur.execute(f"""
+                    INSERT INTO t_p37705306_strim_boom_project.users (username, email, password_hash, avatar, boombucks) 
+                    VALUES ('{username}', '{email}', '{password_hash}', '{avatar}', 0) 
+                    RETURNING id, username, email, avatar, boombucks
+                """)
             user = cur.fetchone()
-            conn.commit()
             
             token = secrets.token_urlsafe(32)
             
@@ -90,7 +99,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'avatar': user[3],
                         'boombucks': user[4]
                     }
-                })
+                }),
+                'isBase64Encoded': False
             }
         
         elif action == 'login':
@@ -101,22 +111,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Missing email or password'})
+                    'body': json.dumps({'error': 'Missing email or password'}),
+                    'isBase64Encoded': False
                 }
             
+            email = escape_sql_string(email)
             password_hash = hashlib.sha256(password.encode()).hexdigest()
             
-            cur.execute(
-                "SELECT id, username, email, avatar, boombucks FROM t_p37705306_strim_boom_project.users WHERE email = %s AND password_hash = %s",
-                (email, password_hash)
-            )
+            cur.execute(f"""
+                SELECT id, username, email, avatar, boombucks 
+                FROM t_p37705306_strim_boom_project.users 
+                WHERE email = '{email}' AND password_hash = '{password_hash}'
+            """)
             user = cur.fetchone()
             
             if not user:
                 return {
                     'statusCode': 401,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Invalid credentials'})
+                    'body': json.dumps({'error': 'Invalid credentials'}),
+                    'isBase64Encoded': False
                 }
             
             token = secrets.token_urlsafe(32)
@@ -133,7 +147,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'avatar': user[3],
                         'boombucks': user[4]
                     }
-                })
+                }),
+                'isBase64Encoded': False
             }
         
         elif action == 'update_profile':
@@ -145,41 +160,43 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Email required'})
+                    'body': json.dumps({'error': 'Email required'}),
+                    'isBase64Encoded': False
                 }
             
+            email = escape_sql_string(email)
             update_fields = []
-            params = []
             
             if username:
-                update_fields.append('username = %s')
-                params.append(username)
+                username = escape_sql_string(username)
+                update_fields.append(f"username = '{username}'")
             
             if avatar:
-                update_fields.append('avatar = %s')
-                params.append(avatar)
+                avatar = escape_sql_string(avatar)
+                update_fields.append(f"avatar = '{avatar}'")
             
             if not update_fields:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'No fields to update'})
+                    'body': json.dumps({'error': 'No fields to update'}),
+                    'isBase64Encoded': False
                 }
             
-            params.append(email)
-            
-            cur.execute(
-                f"UPDATE t_p37705306_strim_boom_project.users SET {', '.join(update_fields)} WHERE email = %s RETURNING id, username, email, avatar, boombucks",
-                tuple(params)
-            )
+            cur.execute(f"""
+                UPDATE t_p37705306_strim_boom_project.users 
+                SET {', '.join(update_fields)} 
+                WHERE email = '{email}' 
+                RETURNING id, username, email, avatar, boombucks
+            """)
             user = cur.fetchone()
-            conn.commit()
             
             if not user:
                 return {
                     'statusCode': 404,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'User not found'})
+                    'body': json.dumps({'error': 'User not found'}),
+                    'isBase64Encoded': False
                 }
             
             return {
@@ -193,21 +210,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'avatar': user[3],
                         'boombucks': user[4]
                     }
-                })
+                }),
+                'isBase64Encoded': False
             }
         
         else:
             return {
                 'statusCode': 400,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Invalid action'})
+                'body': json.dumps({'error': 'Invalid action'}),
+                'isBase64Encoded': False
             }
     
     except Exception as e:
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'error': str(e)}),
+            'isBase64Encoded': False
         }
     finally:
         if 'cur' in locals():

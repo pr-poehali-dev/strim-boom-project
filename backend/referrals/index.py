@@ -3,7 +3,10 @@ import os
 from typing import Dict, Any
 import psycopg2
 import psycopg2.extras
-from datetime import datetime
+
+def escape_sql_string(s: str) -> str:
+    """Экранирует строки для безопасного использования в SQL"""
+    return s.replace("'", "''")
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
@@ -22,13 +25,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
     
     database_url = os.environ.get('DATABASE_URL')
     
     try:
         conn = psycopg2.connect(database_url)
+        conn.autocommit = True
         cur = conn.cursor()
         
         if method == 'GET':
@@ -39,17 +44,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Missing user_id'})
+                    'body': json.dumps({'error': 'Missing user_id'}),
+                    'isBase64Encoded': False
                 }
             
-            cur.execute("""
+            cur.execute(f"""
                 SELECT r.id, r.referrer_id, r.referred_user_id, u.username,
                        r.purchase_amount, r.reward_earned, r.status, r.created_at
-                FROM referrals r
-                JOIN users u ON r.referred_user_id = u.id
-                WHERE r.referrer_id = %s
+                FROM t_p37705306_strim_boom_project.referrals r
+                JOIN t_p37705306_strim_boom_project.users u ON r.referred_user_id = u.id
+                WHERE r.referrer_id = {user_id}
                 ORDER BY r.created_at DESC
-            """, (user_id,))
+            """)
             
             referrals = []
             for row in cur.fetchall():
@@ -64,7 +70,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'createdAt': row[7].isoformat() if row[7] else None
                 })
             
-            cur.execute("SELECT referral_code FROM users WHERE id = %s", (user_id,))
+            cur.execute(f"SELECT referral_code FROM t_p37705306_strim_boom_project.users WHERE id = {user_id}")
             referral_code_row = cur.fetchone()
             referral_code = referral_code_row[0] if referral_code_row else None
             
@@ -74,7 +80,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'body': json.dumps({
                     'referrals': referrals,
                     'referralCode': referral_code
-                })
+                }),
+                'isBase64Encoded': False
             }
         
         elif method == 'POST':
@@ -87,57 +94,75 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Missing referrer_id or referred_user_id'})
+                    'body': json.dumps({'error': 'Missing referrer_id or referred_user_id'}),
+                    'isBase64Encoded': False
                 }
             
-            cur.execute("""
-                INSERT INTO referrals (referrer_id, referred_user_id, purchase_amount, status)
-                VALUES (%s, %s, %s, 'pending')
-                ON CONFLICT (referrer_id, referred_user_id) 
-                DO UPDATE SET purchase_amount = referrals.purchase_amount + EXCLUDED.purchase_amount
-                RETURNING id, purchase_amount, reward_earned, status
-            """, (referrer_id, referred_user_id, purchase_amount))
+            cur.execute(f"""
+                SELECT id, purchase_amount, reward_earned, status
+                FROM t_p37705306_strim_boom_project.referrals
+                WHERE referrer_id = {referrer_id} AND referred_user_id = {referred_user_id}
+            """)
+            existing = cur.fetchone()
             
-            row = cur.fetchone()
+            if existing:
+                new_purchase = existing[1] + purchase_amount
+                cur.execute(f"""
+                    UPDATE t_p37705306_strim_boom_project.referrals
+                    SET purchase_amount = {new_purchase}
+                    WHERE referrer_id = {referrer_id} AND referred_user_id = {referred_user_id}
+                    RETURNING id, purchase_amount, reward_earned, status
+                """)
+                row = cur.fetchone()
+            else:
+                cur.execute(f"""
+                    INSERT INTO t_p37705306_strim_boom_project.referrals (referrer_id, referred_user_id, purchase_amount, status, created_at)
+                    VALUES ({referrer_id}, {referred_user_id}, {purchase_amount}, 'pending', CURRENT_TIMESTAMP)
+                    RETURNING id, purchase_amount, reward_earned, status
+                """)
+                row = cur.fetchone()
+            
             total_purchase = row[1]
+            status = row[3]
             
-            if total_purchase >= 3 and row[3] == 'pending':
-                cur.execute("""
-                    UPDATE referrals
+            if total_purchase >= 3 and status == 'pending':
+                cur.execute(f"""
+                    UPDATE t_p37705306_strim_boom_project.referrals
                     SET status = 'rewarded', reward_earned = 1
-                    WHERE referrer_id = %s AND referred_user_id = %s
-                """, (referrer_id, referred_user_id))
+                    WHERE referrer_id = {referrer_id} AND referred_user_id = {referred_user_id}
+                """)
                 
-                cur.execute("""
-                    UPDATE users
+                cur.execute(f"""
+                    UPDATE t_p37705306_strim_boom_project.users
                     SET boombucks = boombucks + 1
-                    WHERE id = %s
-                """, (referrer_id,))
+                    WHERE id = {referrer_id}
+                """)
                 
-                cur.execute("""
-                    INSERT INTO transactions (user_id, type, amount, description, status)
-                    VALUES (%s, 'referral_reward', 1, 'Referral reward', 'completed')
-                """, (referrer_id,))
-            
-            conn.commit()
+                cur.execute(f"""
+                    INSERT INTO t_p37705306_strim_boom_project.transactions (user_id, type, amount, description, status, created_at)
+                    VALUES ({referrer_id}, 'referral_reward', 1, 'Referral reward', 'completed', CURRENT_TIMESTAMP)
+                """)
             
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'success': True})
+                'body': json.dumps({'success': True}),
+                'isBase64Encoded': False
             }
         
         return {
             'statusCode': 400,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Invalid request'})
+            'body': json.dumps({'error': 'Invalid request'}),
+            'isBase64Encoded': False
         }
     
     except Exception as e:
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'error': str(e)}),
+            'isBase64Encoded': False
         }
     finally:
         if 'cur' in locals():

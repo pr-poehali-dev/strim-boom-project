@@ -4,6 +4,10 @@ from typing import Dict, Any
 import psycopg2
 import psycopg2.extras
 
+def escape_sql_string(s: str) -> str:
+    """Экранирует строки для безопасного использования в SQL"""
+    return s.replace("'", "''")
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
     Business: Система донатов для стримеров
@@ -21,13 +25,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
     
     database_url = os.environ.get('DATABASE_URL')
     
     try:
         conn = psycopg2.connect(database_url)
+        conn.autocommit = True
         cur = conn.cursor()
         
         if method == 'GET':
@@ -38,17 +44,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Missing stream_id'})
+                    'body': json.dumps({'error': 'Missing stream_id'}),
+                    'isBase64Encoded': False
                 }
             
-            cur.execute("""
+            cur.execute(f"""
                 SELECT d.id, d.amount, d.message, d.created_at, u.username
-                FROM donations d
-                LEFT JOIN users u ON d.from_user_id = u.id
-                WHERE d.stream_id = %s
+                FROM t_p37705306_strim_boom_project.donations d
+                LEFT JOIN t_p37705306_strim_boom_project.users u ON d.from_user_id = u.id
+                WHERE d.stream_id = {stream_id}
                 ORDER BY d.created_at DESC
                 LIMIT 50
-            """, (stream_id,))
+            """)
             
             donations = []
             for row in cur.fetchall():
@@ -63,7 +70,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'donations': donations})
+                'body': json.dumps({'donations': donations}),
+                'isBase64Encoded': False
             }
         
         elif method == 'POST':
@@ -77,45 +85,46 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Missing required fields'})
+                    'body': json.dumps({'error': 'Missing required fields'}),
+                    'isBase64Encoded': False
                 }
             
-            cur.execute("SELECT boombucks FROM users WHERE id = %s", (from_user_id,))
+            message = escape_sql_string(message)
+            
+            cur.execute(f"SELECT boombucks FROM t_p37705306_strim_boom_project.users WHERE id = {from_user_id}")
             user = cur.fetchone()
             
             if not user or user[0] < amount:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Insufficient boombucks'})
+                    'body': json.dumps({'error': 'Insufficient boombucks'}),
+                    'isBase64Encoded': False
                 }
             
-            cur.execute("""
-                UPDATE users 
-                SET boombucks = boombucks - %s 
-                WHERE id = %s
-            """, (amount, from_user_id))
+            cur.execute(f"""
+                UPDATE t_p37705306_strim_boom_project.users 
+                SET boombucks = boombucks - {amount} 
+                WHERE id = {from_user_id}
+            """)
             
-            cur.execute("""
-                SELECT user_id FROM streams WHERE id = %s
-            """, (stream_id,))
+            cur.execute(f"SELECT user_id FROM t_p37705306_strim_boom_project.streams WHERE id = {stream_id}")
             streamer = cur.fetchone()
             
             if streamer:
-                cur.execute("""
-                    UPDATE users 
-                    SET boombucks = boombucks + %s 
-                    WHERE id = %s
-                """, (amount, streamer[0]))
+                cur.execute(f"""
+                    UPDATE t_p37705306_strim_boom_project.users 
+                    SET boombucks = boombucks + {amount} 
+                    WHERE id = {streamer[0]}
+                """)
             
-            cur.execute("""
-                INSERT INTO donations (stream_id, from_user_id, amount, message)
-                VALUES (%s, %s, %s, %s)
+            cur.execute(f"""
+                INSERT INTO t_p37705306_strim_boom_project.donations (stream_id, from_user_id, amount, message, created_at)
+                VALUES ({stream_id}, {from_user_id}, {amount}, '{message}', CURRENT_TIMESTAMP)
                 RETURNING id, amount, message, created_at
-            """, (stream_id, from_user_id, amount, message))
+            """)
             
             donation = cur.fetchone()
-            conn.commit()
             
             return {
                 'statusCode': 200,
@@ -127,20 +136,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'message': donation[2],
                         'timestamp': donation[3].isoformat() if donation[3] else None
                     }
-                })
+                }),
+                'isBase64Encoded': False
             }
         
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Method not allowed'})
+            'body': json.dumps({'error': 'Method not allowed'}),
+            'isBase64Encoded': False
         }
     
     except Exception as e:
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'error': str(e)}),
+            'isBase64Encoded': False
         }
     finally:
         if 'cur' in locals():

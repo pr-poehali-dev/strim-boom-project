@@ -4,7 +4,10 @@ import secrets
 from typing import Dict, Any
 import psycopg2
 import psycopg2.extras
-from datetime import datetime
+
+def escape_sql_string(s: str) -> str:
+    """Экранирует строки для безопасного использования в SQL"""
+    return s.replace("'", "''")
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
@@ -23,13 +26,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
     
     database_url = os.environ.get('DATABASE_URL')
     
     try:
         conn = psycopg2.connect(database_url)
+        conn.autocommit = True
         cur = conn.cursor()
         
         if method == 'GET':
@@ -37,8 +42,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 SELECT s.id, s.title, s.description, s.thumbnail, s.category, 
                        s.is_live, s.viewers_count, s.tts_enabled, s.tts_voice,
                        u.username, u.avatar
-                FROM streams s
-                JOIN users u ON s.user_id = u.id
+                FROM t_p37705306_strim_boom_project.streams s
+                JOIN t_p37705306_strim_boom_project.users u ON s.user_id = u.id
                 WHERE s.is_live = true
                 ORDER BY s.viewers_count DESC
                 LIMIT 50
@@ -63,7 +68,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'streams': streams})
+                'body': json.dumps({'streams': streams}),
+                'isBase64Encoded': False
             }
         
         elif method == 'POST':
@@ -78,19 +84,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Missing user_id or title'})
+                    'body': json.dumps({'error': 'Missing user_id or title'}),
+                    'isBase64Encoded': False
                 }
             
+            title = escape_sql_string(title)
+            description = escape_sql_string(description)
+            category = escape_sql_string(category)
+            thumbnail = escape_sql_string(thumbnail)
             stream_key = secrets.token_urlsafe(32)
             
-            cur.execute("""
-                INSERT INTO streams (user_id, title, description, thumbnail, category, is_live, stream_key, started_at)
-                VALUES (%s, %s, %s, %s, %s, true, %s, CURRENT_TIMESTAMP)
+            cur.execute(f"""
+                INSERT INTO t_p37705306_strim_boom_project.streams 
+                (user_id, title, description, thumbnail, category, is_live, stream_key, started_at, viewers_count)
+                VALUES ({user_id}, '{title}', '{description}', '{thumbnail}', '{category}', true, '{stream_key}', CURRENT_TIMESTAMP, 0)
                 RETURNING id, title, description, thumbnail, category, is_live, viewers_count, stream_key
-            """, (user_id, title, description, thumbnail, category, stream_key))
+            """)
             
             stream = cur.fetchone()
-            conn.commit()
             
             return {
                 'statusCode': 200,
@@ -106,7 +117,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'viewers': stream[6],
                         'streamKey': stream[7]
                     }
-                })
+                }),
+                'isBase64Encoded': False
             }
         
         elif method == 'PUT':
@@ -115,45 +127,47 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             action = body_data.get('action')
             
             if action == 'stop':
-                cur.execute("""
-                    UPDATE streams 
+                cur.execute(f"""
+                    UPDATE t_p37705306_strim_boom_project.streams 
                     SET is_live = false, ended_at = CURRENT_TIMESTAMP
-                    WHERE id = %s
-                """, (stream_id,))
-                conn.commit()
+                    WHERE id = {stream_id}
+                """)
                 
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'success': True})
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
                 }
             
             elif action == 'update_viewers':
                 viewers_count = body_data.get('viewers_count', 0)
-                cur.execute("""
-                    UPDATE streams 
-                    SET viewers_count = %s
-                    WHERE id = %s
-                """, (viewers_count, stream_id))
-                conn.commit()
+                cur.execute(f"""
+                    UPDATE t_p37705306_strim_boom_project.streams 
+                    SET viewers_count = {viewers_count}
+                    WHERE id = {stream_id}
+                """)
                 
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'success': True})
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
                 }
         
         return {
             'statusCode': 400,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Invalid request'})
+            'body': json.dumps({'error': 'Invalid request'}),
+            'isBase64Encoded': False
         }
     
     except Exception as e:
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'error': str(e)}),
+            'isBase64Encoded': False
         }
     finally:
         if 'cur' in locals():

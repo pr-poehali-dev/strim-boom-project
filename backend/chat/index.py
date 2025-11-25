@@ -4,6 +4,10 @@ from typing import Dict, Any
 import psycopg2
 import psycopg2.extras
 
+def escape_sql_string(s: str) -> str:
+    """Экранирует строки для безопасного использования в SQL"""
+    return s.replace("'", "''")
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
     Business: Чат в реальном времени для стримов
@@ -21,13 +25,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
     
     database_url = os.environ.get('DATABASE_URL')
     
     try:
         conn = psycopg2.connect(database_url)
+        conn.autocommit = True
         cur = conn.cursor()
         
         if method == 'GET':
@@ -39,16 +45,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Missing stream_id'})
+                    'body': json.dumps({'error': 'Missing stream_id'}),
+                    'isBase64Encoded': False
                 }
             
-            cur.execute("""
+            cur.execute(f"""
                 SELECT id, username, message, created_at
-                FROM chat_messages
-                WHERE stream_id = %s
+                FROM t_p37705306_strim_boom_project.chat_messages
+                WHERE stream_id = {stream_id}
                 ORDER BY created_at DESC
-                LIMIT %s
-            """, (stream_id, limit))
+                LIMIT {limit}
+            """)
             
             messages = []
             for row in cur.fetchall():
@@ -64,7 +71,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'messages': messages})
+                'body': json.dumps({'messages': messages}),
+                'isBase64Encoded': False
             }
         
         elif method == 'POST':
@@ -78,17 +86,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Missing required fields'})
+                    'body': json.dumps({'error': 'Missing required fields'}),
+                    'isBase64Encoded': False
                 }
             
-            cur.execute("""
-                INSERT INTO chat_messages (stream_id, user_id, username, message)
-                VALUES (%s, %s, %s, %s)
+            username = escape_sql_string(username)
+            message = escape_sql_string(message)
+            
+            cur.execute(f"""
+                INSERT INTO t_p37705306_strim_boom_project.chat_messages (stream_id, user_id, username, message, created_at)
+                VALUES ({stream_id}, {user_id}, '{username}', '{message}', CURRENT_TIMESTAMP)
                 RETURNING id, username, message, created_at
-            """, (stream_id, user_id, username, message))
+            """)
             
             msg = cur.fetchone()
-            conn.commit()
             
             return {
                 'statusCode': 200,
@@ -100,20 +111,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'message': msg[2],
                         'timestamp': msg[3].isoformat() if msg[3] else None
                     }
-                })
+                }),
+                'isBase64Encoded': False
             }
         
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Method not allowed'})
+            'body': json.dumps({'error': 'Method not allowed'}),
+            'isBase64Encoded': False
         }
     
     except Exception as e:
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'error': str(e)}),
+            'isBase64Encoded': False
         }
     finally:
         if 'cur' in locals():

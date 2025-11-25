@@ -3,7 +3,10 @@ import os
 from typing import Dict, Any
 import psycopg2
 import psycopg2.extras
-from datetime import datetime
+
+def escape_sql_string(s: str) -> str:
+    """Экранирует строки для безопасного использования в SQL"""
+    return s.replace("'", "''")
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
@@ -22,13 +25,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
     
     database_url = os.environ.get('DATABASE_URL')
     
     try:
         conn = psycopg2.connect(database_url)
+        conn.autocommit = True
         cur = conn.cursor()
         
         if method == 'GET':
@@ -39,16 +44,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Missing user_id'})
+                    'body': json.dumps({'error': 'Missing user_id'}),
+                    'isBase64Encoded': False
                 }
             
-            cur.execute("""
+            cur.execute(f"""
                 SELECT id, type, amount, currency, description, status, created_at
-                FROM transactions
-                WHERE user_id = %s
+                FROM t_p37705306_strim_boom_project.transactions
+                WHERE user_id = {user_id}
                 ORDER BY created_at DESC
                 LIMIT 100
-            """, (user_id,))
+            """)
             
             transactions = []
             for row in cur.fetchall():
@@ -65,7 +71,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'transactions': transactions})
+                'body': json.dumps({'transactions': transactions}),
+                'isBase64Encoded': False
             }
         
         elif method == 'POST':
@@ -73,32 +80,35 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             user_id = body_data.get('user_id')
             transaction_type = body_data.get('type')
             amount = body_data.get('amount')
-            currency = body_data.get('currency')
+            currency = body_data.get('currency', '')
             description = body_data.get('description', '')
             
             if not user_id or not transaction_type or not amount:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Missing required fields'})
+                    'body': json.dumps({'error': 'Missing required fields'}),
+                    'isBase64Encoded': False
                 }
             
-            cur.execute("""
-                INSERT INTO transactions (user_id, type, amount, currency, description, status)
-                VALUES (%s, %s, %s, %s, %s, 'completed')
+            transaction_type = escape_sql_string(transaction_type)
+            currency = escape_sql_string(currency)
+            description = escape_sql_string(description)
+            
+            cur.execute(f"""
+                INSERT INTO t_p37705306_strim_boom_project.transactions (user_id, type, amount, currency, description, status, created_at)
+                VALUES ({user_id}, '{transaction_type}', {amount}, '{currency}', '{description}', 'completed', CURRENT_TIMESTAMP)
                 RETURNING id, type, amount, currency, description, status, created_at
-            """, (user_id, transaction_type, amount, currency, description))
+            """)
             
             row = cur.fetchone()
             
             if transaction_type == 'buy':
-                cur.execute("""
-                    UPDATE users 
-                    SET boombucks = boombucks + %s
-                    WHERE id = %s
-                """, (amount, user_id))
-            
-            conn.commit()
+                cur.execute(f"""
+                    UPDATE t_p37705306_strim_boom_project.users 
+                    SET boombucks = boombucks + {amount}
+                    WHERE id = {user_id}
+                """)
             
             transaction = {
                 'id': str(row[0]),
@@ -113,20 +123,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'transaction': transaction})
+                'body': json.dumps({'transaction': transaction}),
+                'isBase64Encoded': False
             }
         
         return {
             'statusCode': 400,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Invalid request'})
+            'body': json.dumps({'error': 'Invalid request'}),
+            'isBase64Encoded': False
         }
     
     except Exception as e:
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'error': str(e)}),
+            'isBase64Encoded': False
         }
     finally:
         if 'cur' in locals():
