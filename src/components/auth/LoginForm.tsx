@@ -5,7 +5,7 @@ import { authAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface LoginFormProps {
-  onSuccess: (user: any, token: string) => void;
+  onSuccess: (user: any) => void;
   onSwitchToRegister: () => void;
 }
 
@@ -43,18 +43,16 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }: LoginFormProps) => 
       localStorage.setItem('auth_token', result.token);
       localStorage.setItem('user', JSON.stringify(result.user));
       
-      window.location.reload();
-      
-      onSuccess(result.user, result.token);
-      
       toast({
         title: 'Успешно!',
         description: `Добро пожаловать, ${result.user.username}!`
       });
+      
+      onSuccess(result.user);
     } catch (error) {
       toast({
         title: 'Ошибка',
-        description: 'Не удалось войти',
+        description: 'Не удалось войти. Проверьте данные.',
         variant: 'destructive'
       });
     } finally {
